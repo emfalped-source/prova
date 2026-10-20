@@ -6,79 +6,88 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Prova Online EMFAL</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Archivo:wght@600;800&display=swap">
 <style>
-/* Layout: barra superior fixa com troca Professor/Aluno; aluno vê uma questão por tela com folha de respostas em bolinhas */
 :root{
   --bg:#f6f8f7; --surface:#ffffff; --fg:#17231f; --muted:#5b6b65; --line:#d6dfdb;
   --accent:#0f6b55; --accent-soft:#e1f0eb; --pen:#1d4ed8; --pen-soft:#e3eafc;
   --warn:#b45309; --warn-soft:#fdf1e2; --bad:#b42318; --bad-soft:#fde8e6;
   --display:"Archivo","Arial Narrow",system-ui,sans-serif;
   --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+@media (prefers-color-scheme:dark){:root{
   --bg:#0f1714; --surface:#16211d; --fg:#e6eee9; --muted:#9aaba4; --line:#2a3833;
   --accent:#4cc3a0; --accent-soft:#183a30; --pen:#7aa2ff; --pen-soft:#1c2950;
   --warn:#f0a44b; --warn-soft:#3a2a14; --bad:#ff8a7e; --bad-soft:#3d1c19; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0f1714; --surface:#16211d; --fg:#e6eee9; --muted:#9aaba4; --line:#2a3833;
-  --accent:#4cc3a0; --accent-soft:#183a30; --pen:#7aa2ff; --pen-soft:#1c2950;
-  --warn:#f0a44b; --warn-soft:#3a2a14; --bad:#ff8a7e; --bad-soft:#3d1c19; color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5}
 .wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
-header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+header.top{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
 header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:10px}
 .brand{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:.01em}
 .brand small{display:block;font-family:var(--body);font-weight:400;font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
-.seg{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:3px}
-.seg button{border:0;background:transparent;color:var(--muted);font:700 15px var(--body);padding:8px 16px;border-radius:999px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
-h1{font-size:28px;font-weight:800}
-h2{font-size:20px;font-weight:600}
+h1{font-size:28px;font-weight:800} h2{font-size:20px;font-weight:600}
 .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .stack{display:flex;flex-direction:column;gap:16px}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
 label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted);font-weight:700}
-input[type=text],input[type=number],textarea{font:400 16px var(--body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+input[type=text],input[type=number],input[type=password],textarea,select{font:400 16px var(--body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
 textarea{min-height:70px;resize:vertical}
-input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+input:focus-visible,textarea:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
 .check{flex-direction:row;align-items:center;gap:8px;color:var(--fg);font-weight:400}
 .btn{font:700 16px var(--body);border-radius:10px;padding:12px 18px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
 .btn.ghost{background:transparent}
-.btn.danger{color:var(--bad);border-color:transparent;background:transparent;padding:6px 10px;font-size:14px}
+.btn.small{padding:7px 12px;font-size:14px}
+.btn.danger{color:var(--bad)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
+.linkbtn{background:none;border:0;color:var(--accent);font:700 15px var(--body);cursor:pointer;padding:6px 0;text-decoration:underline}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .spread{justify-content:space-between}
+.hint{font-size:14px;color:var(--muted)}
+.erro{background:var(--bad-soft);color:var(--bad);border-radius:10px;padding:10px 14px;font-size:15px}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap}
+.pill.ok{background:var(--accent-soft);color:var(--accent)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.pen{background:var(--pen-soft);color:var(--pen)}
+.pill.mute{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.code{font-family:var(--display);font-weight:800;letter-spacing:.18em;font-variant-numeric:tabular-nums}
 
-/* editor de questões */
+/* entrada do aluno */
+.codein{font-family:var(--display)!important;font-weight:800!important;font-size:34px!important;letter-spacing:.3em;text-align:center;text-transform:uppercase}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:8px 16px;font:700 15px var(--body);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.names{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+.name{text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:12px 14px;font:400 17px var(--body);cursor:pointer;min-height:52px}
+.name.feito{opacity:.5}
+
+/* editor */
 .q-edit{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
 .q-edit:first-child{border-top:0;padding-top:0}
 .alt-edit{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center}
-.key{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:2px solid var(--line);font-weight:700;cursor:pointer;color:var(--muted);background:var(--surface)}
+.key{position:relative;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:2px solid var(--line);font-weight:700;cursor:pointer;color:var(--muted);background:var(--surface)}
 .key input{position:absolute;opacity:0;pointer-events:none}
 .key.on{background:var(--accent);border-color:var(--accent);color:var(--surface)}
-.hint{font-size:14px;color:var(--muted)}
+.pcard{display:flex;flex-direction:column;gap:10px}
+.pcard + .pcard{border-top:1px solid var(--line);padding-top:16px}
 
-/* resultados */
+/* tabelas */
 .table-wrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
 th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
 th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:700}
-.pill.ok{background:var(--accent-soft);color:var(--accent)}
-.pill.warn{background:var(--warn-soft);color:var(--warn)}
-.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tot{display:flex;gap:10px;flex-wrap:wrap}
 
 /* prova do aluno */
-.timerbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:4;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.timerbar{position:sticky;top:62px;z-index:4;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .clock{font-family:var(--display);font-weight:800;font-size:30px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .clock.warn{color:var(--warn)} .clock.bad{color:var(--bad)}
 .progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden;flex-basis:100%}
@@ -88,7 +97,7 @@ th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute
 .sheet button.done{background:var(--pen);border-color:var(--pen);color:var(--surface)}
 .sheet button.current{outline:3px solid var(--accent);outline-offset:2px}
 .sheet button.missing{border-color:var(--bad);color:var(--bad);background:var(--bad-soft)}
-.stem{font-size:20px;line-height:1.55}
+.stem{font-size:20px;line-height:1.55;white-space:pre-wrap}
 .alts{display:flex;flex-direction:column;gap:10px}
 .alt{display:flex;gap:14px;align-items:flex-start;text-align:left;padding:14px;border:2px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:400 18px var(--body);cursor:pointer;min-height:60px}
 .alt .bub{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--muted);display:flex;align-items:center;justify-content:center;font-weight:700}
@@ -98,253 +107,449 @@ th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute
 .notice.warn{background:var(--warn-soft);color:var(--warn)}
 .notice.bad{background:var(--bad-soft);color:var(--bad)}
 .notice.ok{background:var(--accent-soft);color:var(--accent)}
-.big{font-family:var(--display);font-weight:800;font-size:52px;font-variant-numeric:tabular-nums}
+.big{font-family:var(--display);font-weight:800;font-size:52px;font-variant-numeric:tabular-nums;line-height:1.1}
 .modal{position:fixed;inset:0;background:rgb(0 0 0 / .45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
-.modal .panel{max-width:440px;width:100%}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.modal .panel{max-width:460px;width:100%}
+#carga{position:fixed;inset:0;background:rgb(0 0 0 / .35);display:flex;align-items:center;justify-content:center;z-index:30}
+#carga .panel{display:flex;gap:12px;align-items:center}
+.spin{width:22px;height:22px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:g 1s linear infinite}
+@keyframes g{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
-
 </head><body>
 <header class="top"><div class="wrap">
-  <div class="brand">Prova Online<small>EMFAL · protótipo</small></div>
-  <div class="seg" role="group" aria-label="Modo">
-    <button id="modeProf" aria-pressed="true">Professor</button>
-    <button id="modeAluno" aria-pressed="false">Aluno</button>
-  </div>
+  <div class="brand">Prova Online<small>EMFAL</small></div>
+  <div class="row" id="topo"></div>
 </div></header>
-
 <main class="wrap" id="app"></main>
 <div id="modalRoot"></div>
+<div id="carga" hidden><div class="panel"><div class="spin"></div><span id="cargaMsg">Carregando...</span></div></div>
 
 <script>
-const L = "ABCDE";
-const state = {
-  mode: "prof",
-  exam: {
-    titulo: "Avaliação de Matemática — 2º trimestre",
-    turma: "C3-7M-A",
-    duracao: 20,
-    embaralhar: true,
-    mostrarNota: true,
-    questoes: [
-      {enunciado:"Qual é o resultado de 3/4 + 1/2?", alts:["4/6","5/4","1/4","3/8","4/4"], certa:1},
-      {enunciado:"Um produto custava R$ 80,00 e teve desconto de 25%. Qual é o novo preço?", alts:["R$ 55,00","R$ 60,00","R$ 65,00","R$ 70,00","R$ 75,00"], certa:1},
-      {enunciado:"Qual dos números abaixo é primo?", alts:["21","27","29","33","39"], certa:2},
-      {enunciado:"Se x + 7 = 15, qual é o valor de x?", alts:["6","7","8","9","22"], certa:2},
-      {enunciado:"A área de um retângulo de 6 cm por 4 cm é:", alts:["10 cm²","20 cm²","24 cm²","28 cm²","48 cm²"], certa:2}
-    ]
-  },
-  entregas: [
-    {nome:"Exemplo: Ana Clara", chamada:3, acertos:4, total:5, saidas:0, motivo:"Entregou", hora:"09:42"},
-    {nome:"Exemplo: João Pedro", chamada:15, acertos:3, total:5, saidas:2, motivo:"Tempo esgotado", hora:"09:50"}
-  ],
-  sess: null
-};
-const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const shuffle = a => {a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-let tick=null;
+'use strict';
+var API_URL = 'https://script.google.com/macros/s/AKfycbzCbPfrmF1AZhXP2xh0Se-mMQUJlWqbTkCZ8doxeNOsn5XHBE-2YMW-M6T4_R3BtBrF/exec';
+var CORRETOR_URL = 'https://emfalped-source.github.io/corretor/';
+var SEM_TOKEN = ['entrar', 'sair', 'alunoAbrir', 'alunoIniciar', 'alunoEntregar', 'alunoSaiu'];
+var L = 'ABCDE';
+var TIPOS = ['Prova parcial', 'Prova mensal', 'Prova trimestral', 'Simulado', 'Outra avaliação'];
 
-function setMode(m){
-  if(state.sess && !state.sess.fim && m!=="aluno"){ return modal("Prova em andamento","Termine ou entregue a prova antes de voltar ao modo Professor.",[["Continuar a prova",closeModal,"primary"]]); }
-  state.mode=m;
-  $("#modeProf").setAttribute("aria-pressed",m==="prof");
-  $("#modeAluno").setAttribute("aria-pressed",m==="aluno");
-  render();
+// ---------- utilidades ----------
+function $(s) { return document.querySelector(s); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function num(v) { return String(Math.round(Number(v) * 100) / 100).replace('.', ','); }
+function guardar(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function pegar(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+function carga(on, msg) { $('#carga').hidden = !on; if (msg) $('#cargaMsg').textContent = msg; }
+function fmt(ms) { ms = Math.max(0, ms); var t = Math.ceil(ms / 1000), m = Math.floor(t / 60), s = t % 60; return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'); }
+function modal(t, msg, btns) {
+  $('#modalRoot').innerHTML = '<div class="modal" role="dialog" aria-modal="true"><div class="panel stack"><h2>' + esc(t) + '</h2><p style="margin:0">' + esc(msg) + '</p><div class="row" style="justify-content:flex-end">' +
+    btns.map(function (b, i) { return '<button class="btn ' + (b[2] || '') + '" data-mb="' + i + '">' + esc(b[0]) + '</button>'; }).join('') + '</div></div></div>';
+  document.querySelectorAll('[data-mb]').forEach(function (b) { b.onclick = btns[+b.dataset.mb][1]; });
+  var last = document.querySelector('[data-mb]:last-child'); if (last) last.focus();
 }
-$("#modeProf").onclick=()=>setMode("prof");
-$("#modeAluno").onclick=()=>setMode("aluno");
+function fecharModal() { $('#modalRoot').innerHTML = ''; }
+// embaralhamento que se repete igual para o mesmo estudante (para retomar a prova)
+function rng(seed) { var h = 2166136261; for (var i = 0; i < seed.length; i++) { h ^= seed.charCodeAt(i); h = Math.imul(h, 16777619); } return function () { h += 0x6D2B79F5; var t = h; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function embaralhar(a, r) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(r() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
 
-function render(){
-  if(state.mode==="prof") renderProf();
-  else if(!state.sess) renderEntrada();
-  else if(state.sess.fim) renderFim();
-  else renderProva();
+// ---------- servidor ----------
+var SESS = pegar('corretor_sessao'); // mesma sessão do Corretor EMFAL
+function api(fn) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  if (SEM_TOKEN.indexOf(fn) < 0) args.unshift(SESS ? SESS.token : '');
+  return fetch(API_URL, { method: 'POST', body: JSON.stringify({ fn: fn, args: args }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, credentials: 'omit', redirect: 'follow' })
+    .catch(function () { throw new Error('Sem conexão com a internet. Confira o Wi-Fi e tente de novo.'); })
+    .then(function (r) { if (!r.ok) throw new Error('O servidor não respondeu (erro ' + r.status + '). Tente de novo.'); return r.json(); })
+    .then(function (j) {
+      if (j && j.ok) return j.res;
+      var m = String((j && j.erro) || 'Erro desconhecido.').replace(/^Error: /, '');
+      if (/^SESSAO:/.test(m)) { SESS = null; guardar('corretor_sessao', null); m = m.replace(/^SESSAO: ?/, ''); }
+      if (/^TROCAR:/.test(m)) { m = 'Antes de usar a Prova Online, troque sua senha provisória no Corretor EMFAL.'; }
+      throw new Error(m);
+    });
 }
-
-/* ---------------- PROFESSOR ---------------- */
-function renderProf(){
-  const e=state.exam;
-  $("#app").innerHTML=`
-  <div class="stack">
-    <div><div class="eyebrow">Montar prova</div><h1>Configuração</h1></div>
-    <section class="panel stack">
-      <label>Título da prova<input type="text" id="titulo" value="${esc(e.titulo)}"></label>
-      <div class="grid2">
-        <label>Turma<input type="text" id="turma" value="${esc(e.turma)}"></label>
-        <label>Duração (minutos)<input type="number" id="duracao" min="1" max="240" value="${e.duracao}"></label>
-      </div>
-      <label class="check"><input type="checkbox" id="embaralhar" ${e.embaralhar?"checked":""}> Embaralhar questões e alternativas para cada aluno</label>
-      <label class="check"><input type="checkbox" id="mostrarNota" ${e.mostrarNota?"checked":""}> Mostrar a nota ao aluno quando ele entregar</label>
-      <p class="hint" style="margin:0">Regra fixa: o aluno só consegue entregar quando todas as questões estiverem respondidas.</p>
-    </section>
-
-    <div class="row spread"><h2>Questões e gabarito (${e.questoes.length})</h2><button class="btn" id="addQ">+ Nova questão</button></div>
-    <section class="panel stack" id="qlist">
-      ${e.questoes.map((q,i)=>`
-      <div class="q-edit" data-i="${i}">
-        <div class="row spread"><strong>Questão ${i+1}</strong>${e.questoes.length>1?`<button class="btn danger" data-del="${i}">Remover</button>`:""}</div>
-        <label>Enunciado<textarea id="enun-${i}" data-f="enunciado" data-i="${i}">${esc(q.enunciado)}</textarea></label>
-        <span class="hint">Toque na letra para marcar a alternativa correta.</span>
-        ${q.alts.map((a,k)=>`
-        <div class="alt-edit">
-          <label class="key ${q.certa===k?"on":""}" title="Marcar ${L[k]} como correta"><input type="radio" name="certa-${i}" data-certa="${i}" value="${k}" ${q.certa===k?"checked":""}>${L[k]}</label>
-          <input type="text" id="alt-${i}-${k}" data-alt="${i}" data-k="${k}" value="${esc(a)}" aria-label="Alternativa ${L[k]} da questão ${i+1}">
-        </div>`).join("")}
-      </div>`).join("")}
-    </section>
-
-    <div class="row spread"><h2>Entregas</h2><span class="hint">Neste protótipo, as entregas ficam só neste aparelho.</span></div>
-    <section class="panel">${tabelaEntregas()}</section>
-  </div>`;
-
-  const bind=(id,key,fn=v=>v)=>{$("#"+id).oninput=ev=>{e[key]=fn(ev.target.type==="checkbox"?ev.target.checked:ev.target.value)}};
-  bind("titulo","titulo");bind("turma","turma");bind("duracao","duracao",v=>Math.max(1,parseInt(v)||1));
-  bind("embaralhar","embaralhar");bind("mostrarNota","mostrarNota");
-  document.querySelectorAll("[data-f]").forEach(t=>t.oninput=ev=>{e.questoes[+t.dataset.i].enunciado=ev.target.value});
-  document.querySelectorAll("[data-alt]").forEach(t=>t.oninput=ev=>{e.questoes[+t.dataset.alt].alts[+t.dataset.k]=ev.target.value});
-  document.querySelectorAll("[data-certa]").forEach(r=>r.onchange=()=>{e.questoes[+r.dataset.certa].certa=+r.value;renderProf()});
-  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{e.questoes.splice(+b.dataset.del,1);renderProf()});
-  $("#addQ").onclick=()=>{e.questoes.push({enunciado:"",alts:["","","","",""],certa:0});renderProf();
-    const n=e.questoes.length-1;const el=$("#enun-"+n);el&&el.focus()};
-}
-function tabelaEntregas(){
-  if(!state.entregas.length) return `<p class="hint" style="margin:0">Nenhuma prova entregue ainda. Passe para o modo Aluno para testar.</p>`;
-  return `<div class="table-wrap"><table>
-    <thead><tr><th>Nº</th><th>Aluno</th><th>Acertos</th><th>Situação</th><th>Saiu da tela</th><th>Hora</th></tr></thead>
-    <tbody>${state.entregas.map(r=>`<tr>
-      <td>${r.chamada}</td><td>${esc(r.nome)}</td><td>${r.acertos}/${r.total}</td>
-      <td><span class="pill ${r.motivo==="Entregou"?"ok":"warn"}">${r.motivo}</span></td>
-      <td>${r.saidas?`<span class="pill bad">${r.saidas}×</span>`:`<span class="pill ok">0</span>`}</td>
-      <td>${r.hora}</td></tr>`).join("")}</tbody></table></div>`;
+function chamar(msg) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  carga(true, msg);
+  return api.apply(null, args).then(function (r) { carga(false); return r; }, function (e) { carga(false); throw e; });
 }
 
-/* ---------------- ALUNO ---------------- */
-function renderEntrada(){
-  const e=state.exam;
-  $("#app").innerHTML=`
-  <div class="stack" style="max-width:520px;margin:0 auto">
-    <div><div class="eyebrow">Turma ${esc(e.turma)}</div><h1>${esc(e.titulo)}</h1></div>
-    <section class="panel stack">
-      <div class="row"><span class="pill ok">${e.questoes.length} questões</span><span class="pill ok">${e.duracao} minutos</span></div>
-      <label>Seu nome completo<input type="text" id="nome" autocomplete="off"></label>
-      <label>Número de chamada<input type="number" id="chamada" min="1" max="60" inputmode="numeric"></label>
-      <div class="notice warn">Você precisa responder <strong>todas</strong> as questões para entregar. O tempo começa a contar quando você tocar em Começar.</div>
-      <p class="hint" id="erroEntrada" style="margin:0;color:var(--bad)" hidden></p>
-      <button class="btn primary" id="comecar">Começar a prova</button>
-    </section>
-  </div>`;
-  $("#comecar").onclick=()=>{
-    const nome=$("#nome").value.trim(), ch=parseInt($("#chamada").value);
-    const err=$("#erroEntrada");
-    if(!nome||!ch){err.textContent="Preencha seu nome e o número de chamada para começar.";err.hidden=false;return}
-    const vazias=e.questoes.filter(q=>!q.enunciado.trim()).length;
-    if(vazias){err.textContent="Esta prova tem questão sem enunciado. Peça ao professor para revisar.";err.hidden=false;return}
-    iniciar(nome,ch);
+// ---------- estado ----------
+var modo = location.hash === '#professor' ? 'prof' : 'aluno';
+var A = { tela: 'codigo', erro: '', prova: null, turma: '', busca: '', s: null, envio: null };
+var P = { tela: 'lista', erro: '', dados: null, ed: null, acomp: null, timer: null };
+var tick = null;
+
+function topo() {
+  var t = $('#topo');
+  if (modo === 'aluno') {
+    var emProva = A.tela === 'prova';
+    t.innerHTML = emProva ? '' : '<button class="btn small ghost" id="irProf">Área do professor</button>';
+    var b = $('#irProf'); if (b) b.onclick = function () { modo = 'prof'; location.hash = 'professor'; render(); };
+  } else {
+    t.innerHTML = (SESS ? '<span class="hint">' + esc(SESS.eu.nome) + '</span><button class="btn small ghost" id="sairP">Sair</button>' : '') +
+      '<button class="btn small" id="irAluno">Tela do aluno</button>';
+    $('#irAluno').onclick = function () { modo = 'aluno'; history.replaceState(null, '', location.pathname); clearInterval(P.timer); render(); };
+    var s = $('#sairP'); if (s) s.onclick = function () { var tk = SESS.token; SESS = null; guardar('corretor_sessao', null); api('sair', tk).catch(function () {}); P.dados = null; render(); };
+  }
+}
+function render() { topo(); if (modo === 'aluno') renderAluno(); else renderProf(); }
+
+/* =================== ALUNO =================== */
+function renderAluno() {
+  var atual = pegar('prova_atual');
+  if (atual && A.tela === 'codigo' && !A.s) return retomar(atual);
+  if (A.tela === 'codigo') telaCodigo();
+  else if (A.tela === 'nome') telaNome();
+  else if (A.tela === 'prova') telaProva();
+  else if (A.tela === 'fim') telaFim();
+}
+function telaCodigo() {
+  $('#app').innerHTML =
+    '<div class="stack" style="max-width:480px;margin:0 auto">' +
+    '<div><div class="eyebrow">Para o estudante</div><h1>Digite o código da prova</h1></div>' +
+    '<form class="panel stack" id="fCod">' +
+    '<input type="text" id="cod" class="codein" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Código da prova" placeholder="······">' +
+    '<p class="hint" style="margin:0">O professor mostra o código no quadro. São 6 letras e números.</p>' +
+    (A.erro ? '<div class="erro">' + esc(A.erro) + '</div>' : '') +
+    '<button class="btn primary" type="submit">Entrar</button></form></div>';
+  var c = $('#cod'); c.focus();
+  c.oninput = function () { c.value = c.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); };
+  $('#fCod').onsubmit = function (ev) {
+    ev.preventDefault();
+    var v = c.value.trim();
+    if (v.length < 6) { A.erro = 'O código tem 6 letras e números.'; return telaCodigo(); }
+    chamar('Abrindo a prova...', 'alunoAbrir', v).then(function (p) {
+      A.prova = p; A.erro = ''; A.turma = p.turmas.length === 1 ? p.turmas[0] : ''; A.busca = ''; A.tela = 'nome'; render();
+    }).catch(function (e) { A.erro = e.message; telaCodigo(); $('#cod').value = v; });
   };
 }
-function iniciar(nome,chamada){
-  const e=state.exam;
-  let ordem=e.questoes.map((q,i)=>i); if(e.embaralhar) ordem=shuffle(ordem);
-  const itens=ordem.map(qi=>{const q=e.questoes[qi];let alts=q.alts.map((t,k)=>({t,k}));if(e.embaralhar)alts=shuffle(alts);return {qi,alts}});
-  state.sess={nome,chamada,itens,resp:Array(itens.length).fill(null),atual:0,inicio:Date.now(),fimEm:Date.now()+e.duracao*60000,saidas:0,avisou5:false,mostrarFaltando:false,fim:null};
-  clearInterval(tick); tick=setInterval(atualizarRelogio,500);
-  try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(_){}
-  renderProva();
+function telaNome() {
+  var p = A.prova;
+  var lista = p.estudantes.filter(function (e) { return (!A.turma || e.turma === A.turma) && (!A.busca || e.nome.toLowerCase().indexOf(A.busca.toLowerCase()) >= 0); });
+  $('#app').innerHTML =
+    '<div class="stack">' +
+    '<div><div class="eyebrow">' + esc(p.tipo) + ' · ' + p.questoes + ' questões · ' + p.duracao + ' minutos</div><h1>' + esc(p.nome) + '</h1></div>' +
+    '<section class="panel stack">' +
+    (p.turmas.length > 1 ? '<div><div class="eyebrow" style="margin-bottom:8px">1. Sua turma</div><div class="chips">' +
+      p.turmas.map(function (t) { return '<button class="chip" data-t="' + esc(t) + '" aria-pressed="' + (A.turma === t) + '">' + esc(t) + '</button>'; }).join('') + '</div></div>' : '<div class="eyebrow">Turma ' + esc(p.turmas[0]) + '</div>') +
+    (A.turma ? '<div class="stack"><div class="eyebrow">' + (p.turmas.length > 1 ? '2. ' : '') + 'Toque no seu nome</div>' +
+      '<input type="text" id="busca" placeholder="Procurar nome" value="' + esc(A.busca) + '" autocomplete="off">' +
+      '<div class="names">' + (lista.length ? lista.map(function (e) { return '<button class="name" data-e="' + esc(e.id) + '">' + esc(e.nome) + '</button>'; }).join('') : '<p class="hint">Nenhum nome encontrado. Fale com o professor.</p>') + '</div></div>' : '') +
+    (A.erro ? '<div class="erro">' + esc(A.erro) + '</div>' : '') +
+    '</section><div><button class="btn ghost" id="voltar">← Outro código</button></div></div>';
+  document.querySelectorAll('[data-t]').forEach(function (b) { b.onclick = function () { A.turma = b.dataset.t; A.busca = ''; telaNome(); }; });
+  var bu = $('#busca'); if (bu) bu.oninput = function () { A.busca = bu.value; var pos = bu.selectionStart; telaNome(); var n = $('#busca'); n.focus(); n.setSelectionRange(pos, pos); };
+  $('#voltar').onclick = function () { A.tela = 'codigo'; A.prova = null; A.erro = ''; render(); };
+  document.querySelectorAll('[data-e]').forEach(function (b) {
+    b.onclick = function () {
+      var e = p.estudantes.filter(function (x) { return x.id === b.dataset.e; })[0];
+      modal('Você é ' + e.nome + '?', 'Turma ' + e.turma + '. Ao tocar em Começar, o tempo de ' + p.duracao + ' minutos começa a contar. Você precisa responder todas as questões para entregar.',
+        [['Não sou eu', fecharModal, 'ghost'], ['Começar a prova', function () { fecharModal(); iniciar(p.codigo, e.id); }, 'primary']]);
+    };
+  });
 }
-document.addEventListener("visibilitychange",()=>{const s=state.sess;if(s&&!s.fim&&document.hidden)s.saidas++});
-
-function faltando(){return state.sess.resp.map((r,i)=>r===null?i:-1).filter(i=>i>=0)}
-function fmt(ms){ms=Math.max(0,ms);const t=Math.ceil(ms/1000),m=Math.floor(t/60),s=t%60;return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")}
-
-function renderProva(){
-  const s=state.sess,e=state.exam,item=s.itens[s.atual],q=e.questoes[item.qi];
-  const falt=faltando(), total=s.itens.length, respondidas=total-falt.length;
-  $("#app").innerHTML=`
-  <div class="stack">
-    <div class="timerbar">
-      <div><div class="eyebrow">${esc(s.nome)} · nº ${s.chamada}</div><div class="hint">${respondidas} de ${total} respondidas</div></div>
-      <div class="clock" id="clock" aria-live="off">${fmt(s.fimEm-Date.now())}</div>
-      <div class="progress"><i style="width:${respondidas/total*100}%"></i></div>
-    </div>
-    <div id="avisoTempo"></div>
-
-    <section class="panel stack">
-      <div class="eyebrow">Questão ${s.atual+1} de ${total}</div>
-      <div class="stem">${esc(q.enunciado)}</div>
-      <div class="alts" role="radiogroup" aria-label="Alternativas">
-        ${item.alts.map((a,pos)=>`<button class="alt" role="radio" aria-checked="${s.resp[s.atual]===a.k}" data-k="${a.k}"><span class="bub">${L[pos]}</span><span>${esc(a.t)}</span></button>`).join("")}
-      </div>
-      <div class="row spread">
-        <button class="btn ghost" id="ant" ${s.atual===0?"disabled":""}>← Anterior</button>
-        ${s.atual<total-1?`<button class="btn" id="prox">Próxima →</button>`:""}
-      </div>
-    </section>
-
-    <section class="panel stack">
-      <div class="row spread"><h2>Folha de respostas</h2><span class="hint">Toque no número para ir à questão</span></div>
-      <div class="sheet">${s.itens.map((_,i)=>`<button data-go="${i}" class="${s.resp[i]!==null?"done":(s.mostrarFaltando?"missing":"")} ${i===s.atual?"current":""}" aria-label="Questão ${i+1}${s.resp[i]!==null?", respondida":", sem resposta"}">${i+1}</button>`).join("")}</div>
-      ${falt.length
-        ? `<div class="notice ${s.mostrarFaltando?"bad":"warn"}">Falta${falt.length>1?"m":""} ${falt.length} questão${falt.length>1?"ões":""}: ${falt.map(i=>i+1).join(", ")}. A entrega só é liberada quando todas estiverem respondidas.</div>`
-        : `<div class="notice ok">Todas as questões foram respondidas. Revise se quiser e entregue.</div>`}
-      <button class="btn primary" id="entregar" ${falt.length?'aria-disabled="true" style="opacity:.55"':""}>Entregar prova</button>
-    </section>
-  </div>`;
-  document.querySelectorAll(".alt").forEach(b=>b.onclick=()=>{s.resp[s.atual]=+b.dataset.k;renderProva()});
-  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{s.atual=+b.dataset.go;renderProva();window.scrollTo({top:0})});
-  $("#ant").onclick=()=>{s.atual--;renderProva();window.scrollTo({top:0})};
-  const p=$("#prox"); if(p) p.onclick=()=>{s.atual++;renderProva();window.scrollTo({top:0})};
-  $("#entregar").onclick=()=>{
-    const f=faltando();
-    if(f.length){
-      s.mostrarFaltando=true; s.atual=f[0]; renderProva(); window.scrollTo({top:0});
-      return modal("Ainda há questões em branco",`Você não respondeu a${f.length>1?"s questões":" questão"} ${f.map(i=>i+1).join(", ")}. Responda todas para poder entregar.`,[["Ir para a questão "+(f[0]+1),closeModal,"primary"]]);
+function iniciar(codigo, estId, salvo) {
+  chamar('Preparando a prova...', 'alunoIniciar', codigo, estId).then(function (r) {
+    var n = r.questoes.length, alts = r.alternativas;
+    var ordem = r.questoes.map(function (q, i) { return i; }), r1 = rng(r.codigo + r.estudante.id);
+    if (r.embaralhar) ordem = embaralhar(ordem, r1);
+    var itens = ordem.map(function (qi) {
+      var op = []; for (var k = 0; k < alts; k++) op.push(k);
+      if (r.embaralhar) op = embaralhar(op, r1);
+      return { qi: qi, op: op };
+    });
+    var resp = salvo && salvo.resp && salvo.resp.length === n ? salvo.resp : Array(n).fill(null);
+    A.s = { codigo: r.codigo, nome: r.nome, est: r.estudante, q: r.questoes, itens: itens, resp: resp, atual: salvo ? salvo.atual || 0 : 0,
+      fim: r.fim, offset: r.agora - Date.now(), saidas: salvo ? salvo.saidas || 0 : 0, mostrarFaltando: false, avisou: false };
+    salvarLocal();
+    A.tela = 'prova'; A.erro = '';
+    clearInterval(tick); tick = setInterval(relogio, 500);
+    try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(function () {}); } catch (e) {}
+    render();
+  }).catch(function (e) {
+    if (salvo && /internet|servidor/.test(e.message)) {
+      $('#app').innerHTML = '<div class="panel stack" style="max-width:480px;margin:0 auto"><h2>Sem conexão</h2><p style="margin:0">' + esc(e.message) + ' Suas respostas continuam guardadas neste tablet.</p><button class="btn primary" id="retomar">Tentar de novo</button></div>';
+      $('#retomar').onclick = function () { iniciar(codigo, estId, salvo); };
+      return;
     }
-    modal("Entregar a prova?","Depois de entregar, não será possível alterar as respostas.",[["Voltar e revisar",closeModal,""],["Entregar",()=>{closeModal();finalizar("Entregou")},"primary"]]);
+    if (salvo) { guardar('prova_atual', null); A.s = null; A.tela = 'codigo'; A.erro = e.message; render(); return; }
+    A.erro = e.message; telaNome();
+  });
+}
+function retomar(atual) {
+  if (atual.enviando) { A.envio = atual; A.tela = 'fim'; A.s = { codigo: atual.codigo, est: atual.est, nome: atual.nome }; enviar(); return; }
+  A.s = { carregando: true };
+  iniciar(atual.codigo, atual.estId, atual);
+}
+function salvarLocal() {
+  var s = A.s; if (!s || !s.est) return;
+  guardar('prova_atual', { codigo: s.codigo, estId: s.est.id, est: s.est, nome: s.nome, resp: s.resp, atual: s.atual, saidas: s.saidas });
+}
+function faltando() { return A.s.resp.map(function (r, i) { return r === null ? i : -1; }).filter(function (i) { return i >= 0; }); }
+// posição na tela (ordem embaralhada) -> questão original
+function respTela(pos) { return A.s.resp[A.s.itens[pos].qi]; }
+function faltandoTela() { var f = []; A.s.itens.forEach(function (it, pos) { if (A.s.resp[it.qi] === null) f.push(pos); }); return f; }
+
+function telaProva() {
+  var s = A.s, it = s.itens[s.atual], q = s.q[it.qi];
+  var falt = faltandoTela(), total = s.itens.length, feitas = total - falt.length;
+  $('#app').innerHTML =
+    '<div class="stack">' +
+    '<div class="timerbar"><div><div class="eyebrow">' + esc(s.est.nome) + ' · ' + esc(s.est.turma) + '</div><div class="hint">' + feitas + ' de ' + total + ' respondidas</div></div>' +
+    '<div class="clock" id="clock">' + fmt(s.fim - Date.now() - s.offset) + '</div>' +
+    '<div class="progress"><i style="width:' + (feitas / total * 100) + '%"></i></div></div>' +
+    '<div id="avisoTempo"></div>' +
+    '<section class="panel stack"><div class="eyebrow">Questão ' + (s.atual + 1) + ' de ' + total + '</div>' +
+    '<div class="stem">' + esc(q.e) + '</div>' +
+    '<div class="alts" role="radiogroup" aria-label="Alternativas">' +
+    it.op.map(function (k, pos) { return '<button class="alt" role="radio" aria-checked="' + (s.resp[it.qi] === L[k]) + '" data-k="' + k + '"><span class="bub">' + L[pos] + '</span><span>' + esc(q.a[k]) + '</span></button>'; }).join('') +
+    '</div><div class="row spread"><button class="btn ghost" id="ant"' + (s.atual === 0 ? ' disabled' : '') + '>← Anterior</button>' +
+    (s.atual < total - 1 ? '<button class="btn" id="prox">Próxima →</button>' : '') + '</div></section>' +
+    '<section class="panel stack"><div class="row spread"><h2>Folha de respostas</h2><span class="hint">Toque no número para ir à questão</span></div>' +
+    '<div class="sheet">' + s.itens.map(function (x, i) { var feito = s.resp[x.qi] !== null; return '<button data-go="' + i + '" class="' + (feito ? 'done' : (s.mostrarFaltando ? 'missing' : '')) + (i === s.atual ? ' current' : '') + '" aria-label="Questão ' + (i + 1) + (feito ? ', respondida' : ', sem resposta') + '">' + (i + 1) + '</button>'; }).join('') + '</div>' +
+    (falt.length ? '<div class="notice ' + (s.mostrarFaltando ? 'bad' : 'warn') + '">Falta' + (falt.length > 1 ? 'm ' : ' ') + falt.length + ' quest' + (falt.length > 1 ? 'ões' : 'ão') + ': ' + falt.map(function (i) { return i + 1; }).join(', ') + '. A entrega só é liberada quando todas estiverem respondidas.</div>'
+      : '<div class="notice ok">Todas as questões foram respondidas. Revise se quiser e entregue.</div>') +
+    '<button class="btn primary" id="entregar"' + (falt.length ? ' aria-disabled="true" style="opacity:.55"' : '') + '>Entregar prova</button></section></div>';
+  document.querySelectorAll('.alt').forEach(function (b) { b.onclick = function () { s.resp[it.qi] = L[+b.dataset.k]; salvarLocal(); telaProva(); }; });
+  document.querySelectorAll('[data-go]').forEach(function (b) { b.onclick = function () { s.atual = +b.dataset.go; salvarLocal(); telaProva(); window.scrollTo(0, 0); }; });
+  $('#ant').onclick = function () { s.atual--; salvarLocal(); telaProva(); window.scrollTo(0, 0); };
+  var px = $('#prox'); if (px) px.onclick = function () { s.atual++; salvarLocal(); telaProva(); window.scrollTo(0, 0); };
+  $('#entregar').onclick = function () {
+    var f = faltandoTela();
+    if (f.length) {
+      s.mostrarFaltando = true; s.atual = f[0]; telaProva(); window.scrollTo(0, 0);
+      return modal('Ainda há questões em branco', 'Você não respondeu ' + (f.length > 1 ? 'às questões ' : 'à questão ') + f.map(function (i) { return i + 1; }).join(', ') + '. Responda todas para poder entregar.', [['Ir para a questão ' + (f[0] + 1), fecharModal, 'primary']]);
+    }
+    modal('Entregar a prova?', 'Depois de entregar, não será possível alterar as respostas.', [['Voltar e revisar', fecharModal, 'ghost'], ['Entregar', function () { fecharModal(); finalizar('ENTREGOU'); }, 'primary']]);
   };
-  atualizarRelogio();
+  relogio();
 }
-function atualizarRelogio(){
-  const s=state.sess; if(!s||s.fim) return;
-  const resta=s.fimEm-Date.now(), c=$("#clock");
-  if(c){c.textContent=fmt(resta);c.className="clock"+(resta<=60000?" bad":resta<=300000?" warn":"")}
-  const av=$("#avisoTempo");
-  if(av){const f=faltando();
-    av.innerHTML = resta<=300000 && f.length ? `<div class="notice bad">Restam menos de 5 minutos e ainda há ${f.length} questão${f.length>1?"ões":""} sem resposta.</div>` : "";}
-  if(resta<=0) finalizar("Tempo esgotado");
+function relogio() {
+  var s = A.s; if (!s || A.tela !== 'prova') return;
+  var resta = s.fim - Date.now() - s.offset, c = $('#clock');
+  if (c) { c.textContent = fmt(resta); c.className = 'clock' + (resta <= 60000 ? ' bad' : resta <= 300000 ? ' warn' : ''); }
+  var av = $('#avisoTempo'), f = faltando().length;
+  if (av) av.innerHTML = resta <= 300000 && f ? '<div class="notice bad">Restam menos de 5 minutos e ainda há ' + f + ' quest' + (f > 1 ? 'ões' : 'ão') + ' sem resposta.</div>' : '';
+  if (resta <= 0) finalizar('TEMPO');
 }
-function finalizar(motivo){
-  const s=state.sess,e=state.exam; clearInterval(tick); closeModal();
-  let acertos=0; s.itens.forEach((it,i)=>{if(s.resp[i]===e.questoes[it.qi].certa)acertos++});
-  const brancos=faltando().length;
-  s.fim={motivo,acertos,total:s.itens.length,brancos};
-  state.entregas.push({nome:s.nome,chamada:s.chamada,acertos,total:s.itens.length,saidas:s.saidas,motivo:motivo+(brancos?` (${brancos} em branco)`:""),hora:new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})});
-  renderFim();
+document.addEventListener('visibilitychange', function () {
+  var s = A.s;
+  if (s && A.tela === 'prova' && document.hidden) { s.saidas++; salvarLocal(); api('alunoSaiu', s.codigo, s.est.id, s.saidas).catch(function () {}); }
+});
+function finalizar(motivo) {
+  var s = A.s; clearInterval(tick); fecharModal();
+  A.envio = { codigo: s.codigo, estId: s.est.id, est: s.est, nome: s.nome, resp: s.resp.map(function (r) { return r || ''; }), saidas: s.saidas, motivo: motivo, enviando: true };
+  guardar('prova_atual', A.envio);
+  A.tela = 'fim'; A.resultado = null; render(); enviar();
 }
-function renderFim(){
-  const s=state.sess,e=state.exam,f=s.fim;
-  $("#app").innerHTML=`
-  <div class="stack" style="max-width:520px;margin:0 auto">
-    <section class="panel stack">
-      <div class="eyebrow">${f.motivo==="Entregou"?"Prova entregue":"Tempo esgotado"}</div>
-      <h1>${esc(s.nome)}, sua prova foi registrada.</h1>
-      ${e.mostrarNota?`<div><div class="big">${f.acertos}/${f.total}</div><div class="hint">questões corretas</div></div>`:`<p class="hint" style="margin:0">O professor vai divulgar o resultado.</p>`}
-      ${f.brancos?`<div class="notice warn">O tempo acabou com ${f.brancos} questão${f.brancos>1?"ões":""} sem resposta.</div>`:""}
-      <button class="btn" id="novo">Próximo aluno</button>
-    </section>
-  </div>`;
-  $("#novo").onclick=()=>{state.sess=null;render()};
+function enviar() {
+  var e = A.envio; A.erroEnvio = '';
+  telaFim();
+  api('alunoEntregar', e.codigo, e.estId, e.resp, e.saidas, e.motivo).then(function (r) {
+    A.resultado = r; guardar('prova_atual', null); telaFim();
+  }).catch(function (err) {
+    A.erroEnvio = err.message; telaFim();
+    setTimeout(function () { if (A.tela === 'fim' && !A.resultado && pegar('prova_atual')) enviar(); }, 10000);
+  });
+}
+function telaFim() {
+  var e = A.envio, r = A.resultado;
+  var h = '<div class="stack" style="max-width:520px;margin:0 auto"><section class="panel stack">';
+  if (!r) {
+    h += '<div class="eyebrow">' + (e.motivo === 'TEMPO' ? 'Tempo esgotado' : 'Entregando') + '</div><h1>Enviando suas respostas...</h1>' +
+      (A.erroEnvio ? '<div class="notice warn">' + esc(A.erroEnvio) + ' Suas respostas estão guardadas neste tablet. Vou tentar de novo sozinho a cada 10 segundos.</div><button class="btn primary" id="tentar">Tentar agora</button>' : '<div class="row"><div class="spin"></div><span class="hint">Não feche esta tela.</span></div>');
+  } else {
+    h += '<div class="eyebrow">' + (e.motivo === 'TEMPO' ? 'Tempo esgotado' : 'Prova entregue') + '</div><h1>' + esc(e.est.nome) + ', sua prova foi registrada.</h1>' +
+      (r.mostrarNota ? '<div><div class="big">' + num(r.nota) + ' <span class="hint" style="font-size:20px">de ' + num(r.valor) + ' pontos</span></div><div class="hint">' + r.acertos + ' de ' + r.questoes + ' questões certas</div></div>' : '<p class="hint" style="margin:0">O professor vai divulgar o resultado.</p>') +
+      (r.brancos ? '<div class="notice warn">O tempo acabou com ' + r.brancos + ' quest' + (r.brancos > 1 ? 'ões' : 'ão') + ' sem resposta.</div>' : '') +
+      '<button class="btn" id="novo">Próximo estudante</button>';
+  }
+  $('#app').innerHTML = h + '</section></div>';
+  var t = $('#tentar'); if (t) t.onclick = enviar;
+  var n = $('#novo'); if (n) n.onclick = function () { A = { tela: 'codigo', erro: '', prova: null, turma: '', busca: '', s: null, envio: null }; render(); };
 }
 
-/* ---------------- modal ---------------- */
-function modal(t,msg,btns){
-  $("#modalRoot").innerHTML=`<div class="modal" role="dialog" aria-modal="true"><div class="panel stack"><h2>${esc(t)}</h2><p style="margin:0">${esc(msg)}</p><div class="row" style="justify-content:flex-end">${btns.map((b,i)=>`<button class="btn ${b[2]}" data-mb="${i}">${esc(b[0])}</button>`).join("")}</div></div></div>`;
-  document.querySelectorAll("[data-mb]").forEach(b=>b.onclick=btns[+b.dataset.mb][1]);
-  const last=document.querySelector("[data-mb]:last-child"); last&&last.focus();
+/* =================== PROFESSOR =================== */
+var erroLogin = '';
+function renderProf() {
+  if (!SESS) return telaLogin();
+  if (SESS.eu && SESS.eu.trocarSenha) {
+    $('#app').innerHTML = '<div class="panel stack" style="max-width:480px;margin:0 auto"><h2>Troque sua senha primeiro</h2><p style="margin:0">Você ainda está com a senha provisória. Entre no Corretor EMFAL, crie sua senha e depois volte aqui.</p><a class="btn primary" style="text-align:center;text-decoration:none" href="' + CORRETOR_URL + '" target="_blank" rel="noopener">Abrir o Corretor EMFAL</a><button class="btn ghost" id="jaTroquei">Já troquei, entrar de novo</button></div>';
+    $('#jaTroquei').onclick = function () { SESS = null; guardar('corretor_sessao', null); render(); };
+    return;
+  }
+  if (!P.dados) {
+    $('#app').innerHTML = '<p class="hint">Carregando suas provas...</p>';
+    return chamar('Carregando provas online...', 'onlineListar').then(function (d) { P.dados = d; renderProf(); }).catch(function (e) { P.erro = e.message; if (!SESS) return render(); $('#app').innerHTML = '<div class="erro">' + esc(e.message) + '</div>'; });
+  }
+  if (P.tela === 'editar') return telaEditor();
+  if (P.tela === 'acomp') return telaAcomp();
+  telaLista();
 }
-function closeModal(){$("#modalRoot").innerHTML=""}
+function telaLogin() {
+  $('#app').innerHTML = '<form class="panel stack" id="fLogin" style="max-width:420px;margin:0 auto">' +
+    '<div><div class="eyebrow">Área do professor</div><h1>Entrar</h1></div>' +
+    '<p class="hint" style="margin:0">Use o mesmo usuário e senha do Corretor EMFAL.</p>' +
+    '<label>Usuário<input type="text" id="lUsu" autocomplete="username" autocapitalize="none"></label>' +
+    '<label>Senha<input type="password" id="lSen" autocomplete="current-password"></label>' +
+    (erroLogin ? '<div class="erro">' + esc(erroLogin) + '</div>' : '') +
+    '<button class="btn primary" type="submit">Entrar</button></form>';
+  $('#fLogin').onsubmit = function (ev) {
+    ev.preventDefault();
+    var u = $('#lUsu').value.trim(), s = $('#lSen').value;
+    if (!u || !s) { erroLogin = 'Preencha o usuário e a senha.'; return telaLogin(); }
+    chamar('Entrando...', 'entrar', u, s).then(function (r) { SESS = r; guardar('corretor_sessao', r); erroLogin = ''; P.dados = null; render(); })
+      .catch(function (e) { erroLogin = e.message; telaLogin(); $('#lUsu').value = u; });
+  };
+}
+function situacaoProva(p) {
+  if (p.ativa) return '<span class="pill ok">Aberta para os alunos</span>';
+  return '<span class="pill mute">Fechada</span>';
+}
+function telaLista() {
+  var d = P.dados;
+  var minhas = d.provas.filter(function (p) { return p.minha; }), outras = d.provas.filter(function (p) { return !p.minha; });
+  function card(p) {
+    var qs = 0; try { qs = JSON.parse(p.conteudo).length; } catch (e) {}
+    return '<div class="pcard"><div class="row spread"><div><h3>' + esc(p.nome) + '</h3><div class="hint">' + esc(p.tipo) + ' · ' + esc(String(p.turmas).split(',').join(', ')) + ' · ' + qs + ' questões · ' + p.duracao + ' min · ' + num(p.valor) + ' pts' + (p.minha ? '' : ' · ' + esc(p.professor)) + '</div></div>' + situacaoProva(p) + '</div>' +
+      '<div class="row"><span class="hint">Código:</span><span class="code" style="font-size:22px">' + esc(p.codigo) + '</span>' +
+      (p.fazendo ? '<span class="pill pen">' + p.fazendo + ' fazendo</span>' : '') + (p.entregues ? '<span class="pill ok">' + p.entregues + ' entregue' + (p.entregues > 1 ? 's' : '') + '</span>' : '') + '</div>' +
+      '<div class="row">' + (p.ativa ? '<button class="btn small" data-fechar="' + p.id + '">Fechar prova</button>' : '<button class="btn small primary" data-abrir="' + p.id + '">Abrir para os alunos</button>') +
+      '<button class="btn small" data-acomp="' + p.id + '">Acompanhar e notas</button>' +
+      ((p.minha || d.eu.perfil === 'coordenacao') ? '<button class="btn small" data-editar="' + p.id + '">Editar</button><button class="btn small danger" data-excluir="' + p.id + '">Excluir</button>' : '') + '</div></div>';
+  }
+  $('#app').innerHTML = '<div class="stack">' +
+    '<div class="row spread"><div><div class="eyebrow">Área do professor</div><h1>Provas online</h1></div><button class="btn primary" id="nova">+ Nova prova</button></div>' +
+    '<section class="panel stack">' + (minhas.length ? minhas.map(card).join('') : '<p class="hint" style="margin:0">Você ainda não criou nenhuma prova online. Toque em Nova prova para começar.</p>') + '</section>' +
+    (outras.length ? '<h2>Provas de outros professores</h2><section class="panel stack">' + outras.map(card).join('') + '</section>' : '') +
+    '<div class="notice ok">Como aplicar: abra a prova, escreva o código no quadro e peça aos alunos para abrirem esta página no tablet. As notas vão direto para a planilha e aparecem também na aba Notas do Corretor EMFAL.</div></div>';
+  $('#nova').onclick = function () { abrirEditor(null); };
+  document.querySelectorAll('[data-editar]').forEach(function (b) { b.onclick = function () { abrirEditor(b.dataset.editar); }; });
+  document.querySelectorAll('[data-abrir]').forEach(function (b) { b.onclick = function () { mudar(b.dataset.abrir, true); }; });
+  document.querySelectorAll('[data-fechar]').forEach(function (b) { b.onclick = function () { mudar(b.dataset.fechar, false); }; });
+  document.querySelectorAll('[data-acomp]').forEach(function (b) { b.onclick = function () { abrirAcomp(b.dataset.acomp); }; });
+  document.querySelectorAll('[data-excluir]').forEach(function (b) {
+    b.onclick = function () {
+      var p = d.provas.filter(function (x) { return x.id === b.dataset.excluir; })[0];
+      modal('Excluir "' + p.nome + '"?', 'A prova online deixa de existir. Notas já entregues continuam na planilha e no Corretor.', [['Cancelar', fecharModal, 'ghost'], ['Excluir', function () { fecharModal(); chamar('Excluindo...', 'onlineExcluir', p.id).then(function (r) { P.dados = r; telaLista(); }).catch(function (e) { modal('Não deu certo', e.message, [['OK', fecharModal, 'primary']]); }); }, 'primary']]);
+    };
+  });
+}
+function mudar(id, abrir) {
+  chamar(abrir ? 'Abrindo a prova...' : 'Fechando a prova...', 'onlineAbrirFechar', id, abrir).then(function (r) { P.dados = r; telaLista(); })
+    .catch(function (e) { modal('Não deu certo', e.message, [['OK', fecharModal, 'primary']]); });
+}
 
+// ----- editor -----
+function abrirEditor(id) {
+  var p = id ? P.dados.provas.filter(function (x) { return x.id === id; })[0] : null;
+  if (p) {
+    var qs = JSON.parse(p.conteudo || '[]');
+    P.ed = { id: p.id, nome: p.nome, tipo: p.tipo, turmas: String(p.turmas).split(',').filter(Boolean), duracao: p.duracao, valor: p.valor, alternativas: p.alternativas,
+      embaralhar: p.embaralhar, mostrarNota: p.mostrarNota, questoes: qs.map(function (q, i) { return { enunciado: q.e, alts: q.a.slice(), certa: L.indexOf(p.gabarito.charAt(i)) }; }), temEntregas: p.entregues > 0 };
+  } else {
+    P.ed = { id: '', nome: '', tipo: 'Prova mensal', turmas: [], duracao: 40, valor: 10, alternativas: 5, embaralhar: true, mostrarNota: true, questoes: [{ enunciado: '', alts: ['', '', '', '', ''], certa: -1 }] };
+  }
+  P.tela = 'editar'; P.erro = ''; render(); window.scrollTo(0, 0);
+}
+function telaEditor() {
+  var e = P.ed, d = P.dados, na = e.alternativas;
+  $('#app').innerHTML = '<div class="stack">' +
+    '<div class="row spread"><div><div class="eyebrow">' + (e.id ? 'Editar prova online' : 'Nova prova online') + '</div><h1>' + (esc(e.nome) || 'Sem nome') + '</h1></div><button class="btn ghost" id="cancelar">Cancelar</button></div>' +
+    (e.temEntregas ? '<div class="notice warn">Alguns alunos já entregaram. Se você mudar o gabarito ou o valor, as notas deles são recalculadas.</div>' : '') +
+    '<section class="panel stack">' +
+    '<label>Nome da prova<input type="text" id="eNome" value="' + esc(e.nome) + '" placeholder="Ex.: Avaliação mensal de Matemática - 7º ano"></label>' +
+    '<div class="grid2"><label>Tipo<select id="eTipo">' + TIPOS.map(function (t) { return '<option' + (t === e.tipo ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label>' +
+    '<label>Duração (minutos)<input type="number" id="eDur" min="1" max="300" value="' + e.duracao + '"></label>' +
+    '<label>Valor (pontos)<input type="number" id="eVal" min="0" step="0.5" value="' + e.valor + '"></label>' +
+    '<label>Alternativas<select id="eAlt"><option value="5"' + (na === 5 ? ' selected' : '') + '>5 (A a E)</option><option value="4"' + (na === 4 ? ' selected' : '') + '>4 (A a D)</option></select></label></div>' +
+    '<div><div class="eyebrow" style="margin-bottom:8px">Turmas que vão fazer</div><div class="chips">' +
+    (d.turmas.length ? d.turmas.map(function (t) { return '<button class="chip" data-turma="' + esc(t.turma) + '" aria-pressed="' + (e.turmas.indexOf(t.turma) >= 0) + '">' + esc(t.turma) + ' <span style="font-weight:400">(' + t.total + ')</span></button>'; }).join('') : '<p class="hint">Nenhuma turma cadastrada. Cadastre as turmas no Corretor EMFAL.</p>') + '</div></div>' +
+    '<label class="check"><input type="checkbox" id="eEmb"' + (e.embaralhar ? ' checked' : '') + '> Embaralhar questões e alternativas para cada aluno</label>' +
+    '<label class="check"><input type="checkbox" id="eMos"' + (e.mostrarNota ? ' checked' : '') + '> Mostrar a nota ao aluno quando ele entregar</label>' +
+    '<p class="hint" style="margin:0">Regra fixa: o aluno só consegue entregar com todas as questões respondidas.</p></section>' +
+    '<div class="row spread"><h2>Questões e gabarito (' + e.questoes.length + ')</h2></div>' +
+    '<section class="panel stack">' + e.questoes.map(function (q, i) {
+      return '<div class="q-edit"><div class="row spread"><strong>Questão ' + (i + 1) + '</strong>' + (e.questoes.length > 1 ? '<button class="btn small danger" data-del="' + i + '">Remover</button>' : '') + '</div>' +
+        '<label>Enunciado<textarea id="en-' + i + '" data-en="' + i + '">' + esc(q.enunciado) + '</textarea></label>' +
+        '<span class="hint">Toque na letra para marcar a alternativa correta.</span>' +
+        q.alts.slice(0, na).map(function (a, k) {
+          return '<div class="alt-edit"><label class="key' + (q.certa === k ? ' on' : '') + '" title="Marcar ' + L[k] + ' como correta"><input type="radio" name="c-' + i + '" data-certa="' + i + '" value="' + k + '"' + (q.certa === k ? ' checked' : '') + '>' + L[k] + '</label>' +
+            '<input type="text" id="a-' + i + '-' + k + '" data-alt="' + i + '" data-k="' + k + '" value="' + esc(a) + '" aria-label="Alternativa ' + L[k] + ' da questão ' + (i + 1) + '"></div>';
+        }).join('') + '</div>';
+    }).join('') + '<button class="btn" id="addQ">+ Nova questão</button></section>' +
+    (P.erro ? '<div class="erro">' + esc(P.erro) + '</div>' : '') +
+    '<div class="row" style="justify-content:flex-end"><button class="btn ghost" id="cancelar2">Cancelar</button><button class="btn primary" id="salvar">Salvar prova</button></div></div>';
+  function lerCampos() {
+    e.nome = $('#eNome').value; e.tipo = $('#eTipo').value; e.duracao = $('#eDur').value; e.valor = $('#eVal').value;
+    e.embaralhar = $('#eEmb').checked; e.mostrarNota = $('#eMos').checked;
+  }
+  ['#eNome', '#eTipo', '#eDur', '#eVal', '#eEmb', '#eMos'].forEach(function (s) { $(s).onchange = lerCampos; $(s).oninput = lerCampos; });
+  $('#eAlt').onchange = function () { lerCampos(); e.alternativas = +$('#eAlt').value; e.questoes.forEach(function (q) { if (q.certa >= e.alternativas) q.certa = -1; }); telaEditor(); };
+  document.querySelectorAll('[data-turma]').forEach(function (b) { b.onclick = function () { lerCampos(); var t = b.dataset.turma, k = e.turmas.indexOf(t); if (k >= 0) e.turmas.splice(k, 1); else e.turmas.push(t); telaEditor(); }; });
+  document.querySelectorAll('[data-en]').forEach(function (t) { t.oninput = function () { e.questoes[+t.dataset.en].enunciado = t.value; }; });
+  document.querySelectorAll('[data-alt]').forEach(function (t) { t.oninput = function () { e.questoes[+t.dataset.alt].alts[+t.dataset.k] = t.value; }; });
+  document.querySelectorAll('[data-certa]').forEach(function (r) { r.onchange = function () { lerCampos(); e.questoes[+r.dataset.certa].certa = +r.value; telaEditor(); }; });
+  document.querySelectorAll('[data-del]').forEach(function (b) { b.onclick = function () { lerCampos(); e.questoes.splice(+b.dataset.del, 1); telaEditor(); }; });
+  $('#addQ').onclick = function () { lerCampos(); e.questoes.push({ enunciado: '', alts: ['', '', '', '', ''], certa: -1 }); telaEditor(); var el = $('#en-' + (e.questoes.length - 1)); if (el) el.focus(); };
+  function cancelar() { P.tela = 'lista'; P.ed = null; P.erro = ''; render(); }
+  $('#cancelar').onclick = cancelar; $('#cancelar2').onclick = cancelar;
+  $('#salvar').onclick = function () {
+    lerCampos();
+    var envio = { id: e.id, nome: e.nome, tipo: e.tipo, turmas: e.turmas, duracao: e.duracao, valor: e.valor, alternativas: e.alternativas, embaralhar: e.embaralhar, mostrarNota: e.mostrarNota, questoes: e.questoes };
+    chamar('Salvando a prova...', 'onlineSalvar', envio).then(function (r) {
+      P.dados = r; P.tela = 'lista'; P.ed = null; P.erro = ''; render(); window.scrollTo(0, 0);
+    }).catch(function (err) { P.erro = err.message; telaEditor(); var x = document.querySelector('.erro'); if (x) x.scrollIntoView({ block: 'center' }); });
+  };
+}
+
+// ----- acompanhamento -----
+var SIT = { NAO_INICIOU: ['Não começou', 'mute'], FAZENDO: ['Fazendo', 'pen'], ENTREGUE: ['Entregou', 'ok'], ABANDONOU: ['Não entregou', 'bad'] };
+function abrirAcomp(id) {
+  P.acompId = id; P.tela = 'acomp'; P.acomp = null; render();
+  clearInterval(P.timer); P.timer = setInterval(function () { if (modo === 'prof' && P.tela === 'acomp' && !document.hidden) atualizarAcomp(true); }, 20000);
+}
+function atualizarAcomp(silencioso) {
+  var pr = silencioso ? api('onlineAcompanhar', P.acompId) : chamar('Atualizando...', 'onlineAcompanhar', P.acompId);
+  return pr.then(function (r) { P.acomp = r; if (P.tela === 'acomp') telaAcomp(); }).catch(function (e) { if (!silencioso) modal('Não deu certo', e.message, [['OK', fecharModal, 'primary']]); });
+}
+function telaAcomp() {
+  var a = P.acomp;
+  if (!a) { $('#app').innerHTML = '<p class="hint">Carregando...</p>'; atualizarAcomp(false); return; }
+  var c = { NAO_INICIOU: 0, FAZENDO: 0, ENTREGUE: 0, ABANDONOU: 0 };
+  a.estudantes.forEach(function (e) { c[e.situacao]++; });
+  var ent = a.estudantes.filter(function (e) { return e.nota !== null; }), media = ent.length ? ent.reduce(function (s, e) { return s + Number(e.nota); }, 0) / ent.length : null;
+  var ordem = { FAZENDO: 0, ABANDONOU: 1, ENTREGUE: 2, NAO_INICIOU: 3 };
+  var lista = a.estudantes.slice().sort(function (x, y) { return (ordem[x.situacao] - ordem[y.situacao]) || x.turma.localeCompare(y.turma) || x.nome.localeCompare(y.nome, 'pt-BR'); });
+  $('#app').innerHTML = '<div class="stack">' +
+    '<div class="row spread"><div><div class="eyebrow">Acompanhar · código <span class="code">' + esc(a.prova.codigo) + '</span></div><h1>' + esc(a.prova.nome) + '</h1></div><button class="btn ghost" id="voltarL">← Provas</button></div>' +
+    '<section class="panel stack"><div class="tot">' +
+    '<span class="pill pen">' + c.FAZENDO + ' fazendo</span><span class="pill ok">' + c.ENTREGUE + ' entregaram</span>' +
+    (c.ABANDONOU ? '<span class="pill bad">' + c.ABANDONOU + ' não entregaram</span>' : '') + '<span class="pill mute">' + c.NAO_INICIOU + ' não começaram</span>' +
+    (media !== null ? '<span class="pill ok">Média ' + num(media) + ' de ' + num(a.prova.valor) + '</span>' : '') + '</div>' +
+    '<div class="row spread"><span class="hint">Atualiza sozinho a cada 20 segundos. ' + (a.prova.ativa ? 'A prova está aberta.' : 'A prova está fechada: os alunos não conseguem começar.') + '</span><button class="btn small" id="atual">Atualizar agora</button></div>' +
+    '<div class="table-wrap"><table><thead><tr><th>Estudante</th><th>Turma</th><th>Situação</th><th>Nota</th><th>Acertos</th><th>Saiu da tela</th><th></th></tr></thead><tbody>' +
+    lista.map(function (e) {
+      var s = SIT[e.situacao] || ['?', 'mute'];
+      var extra = e.situacao === 'FAZENDO' && e.resta !== null ? ' · ' + fmt(e.resta) : '';
+      return '<tr><td>' + esc(e.nome) + '</td><td>' + esc(e.turma) + '</td><td><span class="pill ' + s[1] + '">' + s[0] + extra + '</span>' + (e.obs ? '<div class="hint">' + esc(e.obs) + '</div>' : '') + '</td>' +
+        '<td>' + (e.nota !== null ? num(e.nota) : '—') + '</td><td>' + (e.acertos !== null ? e.acertos + '/' + a.prova.questoes : '—') + '</td>' +
+        '<td>' + (e.saidas ? '<span class="pill bad">' + e.saidas + '×</span>' : (e.situacao === 'NAO_INICIOU' ? '—' : '<span class="pill ok">0</span>')) + '</td>' +
+        '<td>' + (e.situacao !== 'NAO_INICIOU' ? '<button class="btn small" data-lib="' + esc(e.id) + '">Liberar</button>' : '') + '</td></tr>';
+    }).join('') + '</tbody></table></div></section>' +
+    '<p class="hint">"Liberar" apaga o início da prova desse estudante para ele poder começar outra vez (por exemplo, se o tablet descarregou). A nota anterior é substituída quando ele entregar de novo.</p></div>';
+  $('#voltarL').onclick = function () { clearInterval(P.timer); P.tela = 'lista'; P.dados = null; render(); };
+  $('#atual').onclick = function () { atualizarAcomp(false); };
+  document.querySelectorAll('[data-lib]').forEach(function (b) {
+    b.onclick = function () {
+      var e = a.estudantes.filter(function (x) { return x.id === b.dataset.lib; })[0];
+      modal('Liberar ' + e.nome + ' de novo?', 'O tempo recomeça do zero quando ele entrar outra vez.', [['Cancelar', fecharModal, 'ghost'], ['Liberar', function () { fecharModal(); chamar('Liberando...', 'onlineLiberar', P.acompId, e.id).then(function (r) { P.acomp = r; telaAcomp(); }).catch(function (err) { modal('Não deu certo', err.message, [['OK', fecharModal, 'primary']]); }); }, 'primary']]);
+    };
+  });
+}
+
+window.addEventListener('hashchange', function () { if (location.hash === '#professor' && modo !== 'prof') { modo = 'prof'; render(); } });
 render();
 </script>
-
 </body></html>
