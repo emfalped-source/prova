@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f6b55">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Prova Online EMFAL</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Archivo:wght@600;800&display=swap">
+<style>
+/* Layout: barra superior fixa com troca Professor/Aluno; aluno vê uma questão por tela com folha de respostas em bolinhas */
+:root{
+  --bg:#f6f8f7; --surface:#ffffff; --fg:#17231f; --muted:#5b6b65; --line:#d6dfdb;
+  --accent:#0f6b55; --accent-soft:#e1f0eb; --pen:#1d4ed8; --pen-soft:#e3eafc;
+  --warn:#b45309; --warn-soft:#fdf1e2; --bad:#b42318; --bad-soft:#fde8e6;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1714; --surface:#16211d; --fg:#e6eee9; --muted:#9aaba4; --line:#2a3833;
+  --accent:#4cc3a0; --accent-soft:#183a30; --pen:#7aa2ff; --pen-soft:#1c2950;
+  --warn:#f0a44b; --warn-soft:#3a2a14; --bad:#ff8a7e; --bad-soft:#3d1c19; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1714; --surface:#16211d; --fg:#e6eee9; --muted:#9aaba4; --line:#2a3833;
+  --accent:#4cc3a0; --accent-soft:#183a30; --pen:#7aa2ff; --pen-soft:#1c2950;
+  --warn:#f0a44b; --warn-soft:#3a2a14; --bad:#ff8a7e; --bad-soft:#3d1c19; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:10px}
+.brand{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:.01em}
+.brand small{display:block;font-family:var(--body);font-weight:400;font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:3px}
+.seg button{border:0;background:transparent;color:var(--muted);font:700 15px var(--body);padding:8px 16px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h1{font-size:28px;font-weight:800}
+h2{font-size:20px;font-weight:600}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.stack{display:flex;flex-direction:column;gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted);font-weight:700}
+input[type=text],input[type=number],textarea{font:400 16px var(--body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+textarea{min-height:70px;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+.check{flex-direction:row;align-items:center;gap:8px;color:var(--fg);font-weight:400}
+.btn{font:700 16px var(--body);border-radius:10px;padding:12px 18px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad);border-color:transparent;background:transparent;padding:6px 10px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{justify-content:space-between}
+
+/* editor de questões */
+.q-edit{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
+.q-edit:first-child{border-top:0;padding-top:0}
+.alt-edit{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center}
+.key{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:2px solid var(--line);font-weight:700;cursor:pointer;color:var(--muted);background:var(--surface)}
+.key input{position:absolute;opacity:0;pointer-events:none}
+.key.on{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.hint{font-size:14px;color:var(--muted)}
+
+/* resultados */
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:700}
+.pill.ok{background:var(--accent-soft);color:var(--accent)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+
+/* prova do aluno */
+.timerbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:4;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.clock{font-family:var(--display);font-weight:800;font-size:30px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.clock.warn{color:var(--warn)} .clock.bad{color:var(--bad)}
+.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden;flex-basis:100%}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.sheet{display:flex;flex-wrap:wrap;gap:8px}
+.sheet button{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:var(--surface);color:var(--fg);font:700 15px var(--body);cursor:pointer;font-variant-numeric:tabular-nums}
+.sheet button.done{background:var(--pen);border-color:var(--pen);color:var(--surface)}
+.sheet button.current{outline:3px solid var(--accent);outline-offset:2px}
+.sheet button.missing{border-color:var(--bad);color:var(--bad);background:var(--bad-soft)}
+.stem{font-size:20px;line-height:1.55}
+.alts{display:flex;flex-direction:column;gap:10px}
+.alt{display:flex;gap:14px;align-items:flex-start;text-align:left;padding:14px;border:2px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:400 18px var(--body);cursor:pointer;min-height:60px}
+.alt .bub{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--muted);display:flex;align-items:center;justify-content:center;font-weight:700}
+.alt[aria-checked="true"]{border-color:var(--pen);background:var(--pen-soft)}
+.alt[aria-checked="true"] .bub{background:var(--pen);border-color:var(--pen);color:var(--surface)}
+.notice{border-radius:10px;padding:12px 14px;font-size:16px}
+.notice.warn{background:var(--warn-soft);color:var(--warn)}
+.notice.bad{background:var(--bad-soft);color:var(--bad)}
+.notice.ok{background:var(--accent-soft);color:var(--accent)}
+.big{font-family:var(--display);font-weight:800;font-size:52px;font-variant-numeric:tabular-nums}
+.modal{position:fixed;inset:0;background:rgb(0 0 0 / .45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal .panel{max-width:440px;width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head><body>
+<header class="top"><div class="wrap">
+  <div class="brand">Prova Online<small>EMFAL · protótipo</small></div>
+  <div class="seg" role="group" aria-label="Modo">
+    <button id="modeProf" aria-pressed="true">Professor</button>
+    <button id="modeAluno" aria-pressed="false">Aluno</button>
+  </div>
+</div></header>
+
+<main class="wrap" id="app"></main>
+<div id="modalRoot"></div>
+
+<script>
+const L = "ABCDE";
+const state = {
+  mode: "prof",
+  exam: {
+    titulo: "Avaliação de Matemática — 2º trimestre",
+    turma: "C3-7M-A",
+    duracao: 20,
+    embaralhar: true,
+    mostrarNota: true,
+    questoes: [
+      {enunciado:"Qual é o resultado de 3/4 + 1/2?", alts:["4/6","5/4","1/4","3/8","4/4"], certa:1},
+      {enunciado:"Um produto custava R$ 80,00 e teve desconto de 25%. Qual é o novo preço?", alts:["R$ 55,00","R$ 60,00","R$ 65,00","R$ 70,00","R$ 75,00"], certa:1},
+      {enunciado:"Qual dos números abaixo é primo?", alts:["21","27","29","33","39"], certa:2},
+      {enunciado:"Se x + 7 = 15, qual é o valor de x?", alts:["6","7","8","9","22"], certa:2},
+      {enunciado:"A área de um retângulo de 6 cm por 4 cm é:", alts:["10 cm²","20 cm²","24 cm²","28 cm²","48 cm²"], certa:2}
+    ]
+  },
+  entregas: [
+    {nome:"Exemplo: Ana Clara", chamada:3, acertos:4, total:5, saidas:0, motivo:"Entregou", hora:"09:42"},
+    {nome:"Exemplo: João Pedro", chamada:15, acertos:3, total:5, saidas:2, motivo:"Tempo esgotado", hora:"09:50"}
+  ],
+  sess: null
+};
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle = a => {a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let tick=null;
+
+function setMode(m){
+  if(state.sess && !state.sess.fim && m!=="aluno"){ return modal("Prova em andamento","Termine ou entregue a prova antes de voltar ao modo Professor.",[["Continuar a prova",closeModal,"primary"]]); }
+  state.mode=m;
+  $("#modeProf").setAttribute("aria-pressed",m==="prof");
+  $("#modeAluno").setAttribute("aria-pressed",m==="aluno");
+  render();
+}
+$("#modeProf").onclick=()=>setMode("prof");
+$("#modeAluno").onclick=()=>setMode("aluno");
+
+function render(){
+  if(state.mode==="prof") renderProf();
+  else if(!state.sess) renderEntrada();
+  else if(state.sess.fim) renderFim();
+  else renderProva();
+}
+
+/* ---------------- PROFESSOR ---------------- */
+function renderProf(){
+  const e=state.exam;
+  $("#app").innerHTML=`
+  <div class="stack">
+    <div><div class="eyebrow">Montar prova</div><h1>Configuração</h1></div>
+    <section class="panel stack">
+      <label>Título da prova<input type="text" id="titulo" value="${esc(e.titulo)}"></label>
+      <div class="grid2">
+        <label>Turma<input type="text" id="turma" value="${esc(e.turma)}"></label>
+        <label>Duração (minutos)<input type="number" id="duracao" min="1" max="240" value="${e.duracao}"></label>
+      </div>
+      <label class="check"><input type="checkbox" id="embaralhar" ${e.embaralhar?"checked":""}> Embaralhar questões e alternativas para cada aluno</label>
+      <label class="check"><input type="checkbox" id="mostrarNota" ${e.mostrarNota?"checked":""}> Mostrar a nota ao aluno quando ele entregar</label>
+      <p class="hint" style="margin:0">Regra fixa: o aluno só consegue entregar quando todas as questões estiverem respondidas.</p>
+    </section>
+
+    <div class="row spread"><h2>Questões e gabarito (${e.questoes.length})</h2><button class="btn" id="addQ">+ Nova questão</button></div>
+    <section class="panel stack" id="qlist">
+      ${e.questoes.map((q,i)=>`
+      <div class="q-edit" data-i="${i}">
+        <div class="row spread"><strong>Questão ${i+1}</strong>${e.questoes.length>1?`<button class="btn danger" data-del="${i}">Remover</button>`:""}</div>
+        <label>Enunciado<textarea id="enun-${i}" data-f="enunciado" data-i="${i}">${esc(q.enunciado)}</textarea></label>
+        <span class="hint">Toque na letra para marcar a alternativa correta.</span>
+        ${q.alts.map((a,k)=>`
+        <div class="alt-edit">
+          <label class="key ${q.certa===k?"on":""}" title="Marcar ${L[k]} como correta"><input type="radio" name="certa-${i}" data-certa="${i}" value="${k}" ${q.certa===k?"checked":""}>${L[k]}</label>
+          <input type="text" id="alt-${i}-${k}" data-alt="${i}" data-k="${k}" value="${esc(a)}" aria-label="Alternativa ${L[k]} da questão ${i+1}">
+        </div>`).join("")}
+      </div>`).join("")}
+    </section>
+
+    <div class="row spread"><h2>Entregas</h2><span class="hint">Neste protótipo, as entregas ficam só neste aparelho.</span></div>
+    <section class="panel">${tabelaEntregas()}</section>
+  </div>`;
+
+  const bind=(id,key,fn=v=>v)=>{$("#"+id).oninput=ev=>{e[key]=fn(ev.target.type==="checkbox"?ev.target.checked:ev.target.value)}};
+  bind("titulo","titulo");bind("turma","turma");bind("duracao","duracao",v=>Math.max(1,parseInt(v)||1));
+  bind("embaralhar","embaralhar");bind("mostrarNota","mostrarNota");
+  document.querySelectorAll("[data-f]").forEach(t=>t.oninput=ev=>{e.questoes[+t.dataset.i].enunciado=ev.target.value});
+  document.querySelectorAll("[data-alt]").forEach(t=>t.oninput=ev=>{e.questoes[+t.dataset.alt].alts[+t.dataset.k]=ev.target.value});
+  document.querySelectorAll("[data-certa]").forEach(r=>r.onchange=()=>{e.questoes[+r.dataset.certa].certa=+r.value;renderProf()});
+  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{e.questoes.splice(+b.dataset.del,1);renderProf()});
+  $("#addQ").onclick=()=>{e.questoes.push({enunciado:"",alts:["","","","",""],certa:0});renderProf();
+    const n=e.questoes.length-1;const el=$("#enun-"+n);el&&el.focus()};
+}
+function tabelaEntregas(){
+  if(!state.entregas.length) return `<p class="hint" style="margin:0">Nenhuma prova entregue ainda. Passe para o modo Aluno para testar.</p>`;
+  return `<div class="table-wrap"><table>
+    <thead><tr><th>Nº</th><th>Aluno</th><th>Acertos</th><th>Situação</th><th>Saiu da tela</th><th>Hora</th></tr></thead>
+    <tbody>${state.entregas.map(r=>`<tr>
+      <td>${r.chamada}</td><td>${esc(r.nome)}</td><td>${r.acertos}/${r.total}</td>
+      <td><span class="pill ${r.motivo==="Entregou"?"ok":"warn"}">${r.motivo}</span></td>
+      <td>${r.saidas?`<span class="pill bad">${r.saidas}×</span>`:`<span class="pill ok">0</span>`}</td>
+      <td>${r.hora}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+/* ---------------- ALUNO ---------------- */
+function renderEntrada(){
+  const e=state.exam;
+  $("#app").innerHTML=`
+  <div class="stack" style="max-width:520px;margin:0 auto">
+    <div><div class="eyebrow">Turma ${esc(e.turma)}</div><h1>${esc(e.titulo)}</h1></div>
+    <section class="panel stack">
+      <div class="row"><span class="pill ok">${e.questoes.length} questões</span><span class="pill ok">${e.duracao} minutos</span></div>
+      <label>Seu nome completo<input type="text" id="nome" autocomplete="off"></label>
+      <label>Número de chamada<input type="number" id="chamada" min="1" max="60" inputmode="numeric"></label>
+      <div class="notice warn">Você precisa responder <strong>todas</strong> as questões para entregar. O tempo começa a contar quando você tocar em Começar.</div>
+      <p class="hint" id="erroEntrada" style="margin:0;color:var(--bad)" hidden></p>
+      <button class="btn primary" id="comecar">Começar a prova</button>
+    </section>
+  </div>`;
+  $("#comecar").onclick=()=>{
+    const nome=$("#nome").value.trim(), ch=parseInt($("#chamada").value);
+    const err=$("#erroEntrada");
+    if(!nome||!ch){err.textContent="Preencha seu nome e o número de chamada para começar.";err.hidden=false;return}
+    const vazias=e.questoes.filter(q=>!q.enunciado.trim()).length;
+    if(vazias){err.textContent="Esta prova tem questão sem enunciado. Peça ao professor para revisar.";err.hidden=false;return}
+    iniciar(nome,ch);
+  };
+}
+function iniciar(nome,chamada){
+  const e=state.exam;
+  let ordem=e.questoes.map((q,i)=>i); if(e.embaralhar) ordem=shuffle(ordem);
+  const itens=ordem.map(qi=>{const q=e.questoes[qi];let alts=q.alts.map((t,k)=>({t,k}));if(e.embaralhar)alts=shuffle(alts);return {qi,alts}});
+  state.sess={nome,chamada,itens,resp:Array(itens.length).fill(null),atual:0,inicio:Date.now(),fimEm:Date.now()+e.duracao*60000,saidas:0,avisou5:false,mostrarFaltando:false,fim:null};
+  clearInterval(tick); tick=setInterval(atualizarRelogio,500);
+  try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(_){}
+  renderProva();
+}
+document.addEventListener("visibilitychange",()=>{const s=state.sess;if(s&&!s.fim&&document.hidden)s.saidas++});
+
+function faltando(){return state.sess.resp.map((r,i)=>r===null?i:-1).filter(i=>i>=0)}
+function fmt(ms){ms=Math.max(0,ms);const t=Math.ceil(ms/1000),m=Math.floor(t/60),s=t%60;return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")}
+
+function renderProva(){
+  const s=state.sess,e=state.exam,item=s.itens[s.atual],q=e.questoes[item.qi];
+  const falt=faltando(), total=s.itens.length, respondidas=total-falt.length;
+  $("#app").innerHTML=`
+  <div class="stack">
+    <div class="timerbar">
+      <div><div class="eyebrow">${esc(s.nome)} · nº ${s.chamada}</div><div class="hint">${respondidas} de ${total} respondidas</div></div>
+      <div class="clock" id="clock" aria-live="off">${fmt(s.fimEm-Date.now())}</div>
+      <div class="progress"><i style="width:${respondidas/total*100}%"></i></div>
+    </div>
+    <div id="avisoTempo"></div>
+
+    <section class="panel stack">
+      <div class="eyebrow">Questão ${s.atual+1} de ${total}</div>
+      <div class="stem">${esc(q.enunciado)}</div>
+      <div class="alts" role="radiogroup" aria-label="Alternativas">
+        ${item.alts.map((a,pos)=>`<button class="alt" role="radio" aria-checked="${s.resp[s.atual]===a.k}" data-k="${a.k}"><span class="bub">${L[pos]}</span><span>${esc(a.t)}</span></button>`).join("")}
+      </div>
+      <div class="row spread">
+        <button class="btn ghost" id="ant" ${s.atual===0?"disabled":""}>← Anterior</button>
+        ${s.atual<total-1?`<button class="btn" id="prox">Próxima →</button>`:""}
+      </div>
+    </section>
+
+    <section class="panel stack">
+      <div class="row spread"><h2>Folha de respostas</h2><span class="hint">Toque no número para ir à questão</span></div>
+      <div class="sheet">${s.itens.map((_,i)=>`<button data-go="${i}" class="${s.resp[i]!==null?"done":(s.mostrarFaltando?"missing":"")} ${i===s.atual?"current":""}" aria-label="Questão ${i+1}${s.resp[i]!==null?", respondida":", sem resposta"}">${i+1}</button>`).join("")}</div>
+      ${falt.length
+        ? `<div class="notice ${s.mostrarFaltando?"bad":"warn"}">Falta${falt.length>1?"m":""} ${falt.length} questão${falt.length>1?"ões":""}: ${falt.map(i=>i+1).join(", ")}. A entrega só é liberada quando todas estiverem respondidas.</div>`
+        : `<div class="notice ok">Todas as questões foram respondidas. Revise se quiser e entregue.</div>`}
+      <button class="btn primary" id="entregar" ${falt.length?'aria-disabled="true" style="opacity:.55"':""}>Entregar prova</button>
+    </section>
+  </div>`;
+  document.querySelectorAll(".alt").forEach(b=>b.onclick=()=>{s.resp[s.atual]=+b.dataset.k;renderProva()});
+  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{s.atual=+b.dataset.go;renderProva();window.scrollTo({top:0})});
+  $("#ant").onclick=()=>{s.atual--;renderProva();window.scrollTo({top:0})};
+  const p=$("#prox"); if(p) p.onclick=()=>{s.atual++;renderProva();window.scrollTo({top:0})};
+  $("#entregar").onclick=()=>{
+    const f=faltando();
+    if(f.length){
+      s.mostrarFaltando=true; s.atual=f[0]; renderProva(); window.scrollTo({top:0});
+      return modal("Ainda há questões em branco",`Você não respondeu a${f.length>1?"s questões":" questão"} ${f.map(i=>i+1).join(", ")}. Responda todas para poder entregar.`,[["Ir para a questão "+(f[0]+1),closeModal,"primary"]]);
+    }
+    modal("Entregar a prova?","Depois de entregar, não será possível alterar as respostas.",[["Voltar e revisar",closeModal,""],["Entregar",()=>{closeModal();finalizar("Entregou")},"primary"]]);
+  };
+  atualizarRelogio();
+}
+function atualizarRelogio(){
+  const s=state.sess; if(!s||s.fim) return;
+  const resta=s.fimEm-Date.now(), c=$("#clock");
+  if(c){c.textContent=fmt(resta);c.className="clock"+(resta<=60000?" bad":resta<=300000?" warn":"")}
+  const av=$("#avisoTempo");
+  if(av){const f=faltando();
+    av.innerHTML = resta<=300000 && f.length ? `<div class="notice bad">Restam menos de 5 minutos e ainda há ${f.length} questão${f.length>1?"ões":""} sem resposta.</div>` : "";}
+  if(resta<=0) finalizar("Tempo esgotado");
+}
+function finalizar(motivo){
+  const s=state.sess,e=state.exam; clearInterval(tick); closeModal();
+  let acertos=0; s.itens.forEach((it,i)=>{if(s.resp[i]===e.questoes[it.qi].certa)acertos++});
+  const brancos=faltando().length;
+  s.fim={motivo,acertos,total:s.itens.length,brancos};
+  state.entregas.push({nome:s.nome,chamada:s.chamada,acertos,total:s.itens.length,saidas:s.saidas,motivo:motivo+(brancos?` (${brancos} em branco)`:""),hora:new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})});
+  renderFim();
+}
+function renderFim(){
+  const s=state.sess,e=state.exam,f=s.fim;
+  $("#app").innerHTML=`
+  <div class="stack" style="max-width:520px;margin:0 auto">
+    <section class="panel stack">
+      <div class="eyebrow">${f.motivo==="Entregou"?"Prova entregue":"Tempo esgotado"}</div>
+      <h1>${esc(s.nome)}, sua prova foi registrada.</h1>
+      ${e.mostrarNota?`<div><div class="big">${f.acertos}/${f.total}</div><div class="hint">questões corretas</div></div>`:`<p class="hint" style="margin:0">O professor vai divulgar o resultado.</p>`}
+      ${f.brancos?`<div class="notice warn">O tempo acabou com ${f.brancos} questão${f.brancos>1?"ões":""} sem resposta.</div>`:""}
+      <button class="btn" id="novo">Próximo aluno</button>
+    </section>
+  </div>`;
+  $("#novo").onclick=()=>{state.sess=null;render()};
+}
+
+/* ---------------- modal ---------------- */
+function modal(t,msg,btns){
+  $("#modalRoot").innerHTML=`<div class="modal" role="dialog" aria-modal="true"><div class="panel stack"><h2>${esc(t)}</h2><p style="margin:0">${esc(msg)}</p><div class="row" style="justify-content:flex-end">${btns.map((b,i)=>`<button class="btn ${b[2]}" data-mb="${i}">${esc(b[0])}</button>`).join("")}</div></div></div>`;
+  document.querySelectorAll("[data-mb]").forEach(b=>b.onclick=btns[+b.dataset.mb][1]);
+  const last=document.querySelector("[data-mb]:last-child"); last&&last.focus();
+}
+function closeModal(){$("#modalRoot").innerHTML=""}
+
+render();
+</script>
+
+</body></html>
