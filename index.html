@@ -115,6 +115,23 @@ th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute
 .spin{width:22px;height:22px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:g 1s linear infinite}
 @keyframes g{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;z-index:40}
+.cartoes{display:none}
+.ocs{display:flex;flex-direction:column;gap:6px;font-size:15px}
+.ocs div{display:flex;gap:10px;flex-wrap:wrap}
+@media print{
+  @page{size:A4;margin:10mm}
+  body{background:#fff;color:#000}
+  header.top,.noprint,#modalRoot,#carga{display:none!important}
+  .wrap{padding:0!important;max-width:none}
+  .cartoes{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+  .cartao{border:1px dashed #777;padding:10px 12px;height:42mm;display:flex;flex-direction:column;justify-content:space-between;break-inside:avoid;page-break-inside:avoid;color:#000}
+  .ct-top{font-size:9pt;letter-spacing:.08em;text-transform:uppercase;color:#444}
+  .ct-nome{font-weight:700;font-size:11pt;line-height:1.2}
+  .ct-turma{font-size:9pt;color:#333}
+  .ct-pin{font-family:var(--display);font-weight:800;font-size:24pt;letter-spacing:.2em}
+  .ct-obs{font-size:7.5pt;color:#444}
+}
 </style>
 </head><body>
 <header class="top"><div class="wrap">
@@ -129,7 +146,7 @@ th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute
 'use strict';
 var API_URL = 'https://script.google.com/macros/s/AKfycbzCbPfrmF1AZhXP2xh0Se-mMQUJlWqbTkCZ8doxeNOsn5XHBE-2YMW-M6T4_R3BtBrF/exec';
 var CORRETOR_URL = 'https://emfalped-source.github.io/corretor/';
-var SEM_TOKEN = ['entrar', 'sair', 'alunoAbrir', 'alunoIniciar', 'alunoEntregar', 'alunoSaiu'];
+var SEM_TOKEN = ['entrar', 'sair', 'alunoAbrir', 'alunoIniciar', 'alunoRetomar', 'alunoEntregar', 'alunoSaiu'];
 var L = 'ABCDE';
 var TIPOS = ['Prova parcial', 'Prova mensal', 'Prova trimestral', 'Simulado', 'Outra avaliação'];
 
@@ -139,6 +156,7 @@ function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function
 function num(v) { return String(Math.round(Number(v) * 100) / 100).replace('.', ','); }
 function guardar(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function pegar(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+function pegarTexto(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
 function carga(on, msg) { $('#carga').hidden = !on; if (msg) $('#cargaMsg').textContent = msg; }
 function fmt(ms) { ms = Math.max(0, ms); var t = Math.ceil(ms / 1000), m = Math.floor(t / 60), s = t % 60; return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'); }
 function modal(t, msg, btns) {
@@ -154,6 +172,9 @@ function embaralhar(a, r) { a = a.slice(); for (var i = a.length - 1; i > 0; i--
 
 // ---------- servidor ----------
 var SESS = pegar('corretor_sessao'); // mesma sessão do Corretor EMFAL
+// identificação deste tablet (fica guardada no aparelho)
+var APARELHO = pegarTexto('aparelho_id');
+if (!APARELHO) { APARELHO = 'T' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); try { localStorage.setItem('aparelho_id', APARELHO); } catch (e) {} }
 function api(fn) {
   var args = Array.prototype.slice.call(arguments, 1);
   if (SEM_TOKEN.indexOf(fn) < 0) args.unshift(SESS ? SESS.token : '');
@@ -201,6 +222,7 @@ function renderAluno() {
   if (atual && A.tela === 'codigo' && !A.s) return retomar(atual);
   if (A.tela === 'codigo') telaCodigo();
   else if (A.tela === 'nome') telaNome();
+  else if (A.tela === 'pin') telaPin();
   else if (A.tela === 'prova') telaProva();
   else if (A.tela === 'fim') telaFim();
 }
@@ -244,13 +266,32 @@ function telaNome() {
   document.querySelectorAll('[data-e]').forEach(function (b) {
     b.onclick = function () {
       var e = p.estudantes.filter(function (x) { return x.id === b.dataset.e; })[0];
-      modal('Você é ' + e.nome + '?', 'Turma ' + e.turma + '. Ao tocar em Começar, o tempo de ' + p.duracao + ' minutos começa a contar. Você precisa responder todas as questões para entregar.',
-        [['Não sou eu', fecharModal, 'ghost'], ['Começar a prova', function () { fecharModal(); iniciar(p.codigo, e.id); }, 'primary']]);
+      A.est = e; A.erro = ''; A.tela = 'pin'; render();
     };
   });
 }
-function iniciar(codigo, estId, salvo) {
-  chamar('Preparando a prova...', 'alunoIniciar', codigo, estId).then(function (r) {
+function telaPin() {
+  var p = A.prova, e = A.est;
+  $('#app').innerHTML =
+    '<form class="stack" id="fPin" style="max-width:480px;margin:0 auto">' +
+    '<div><div class="eyebrow">Turma ' + esc(e.turma) + '</div><h1>' + esc(e.nome) + '</h1></div>' +
+    '<section class="panel stack">' +
+    '<label for="pin">Digite o seu PIN (6 números do seu cartão)</label>' +
+    '<input type="password" id="pin" class="codein" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="······">' +
+    '<p class="hint" style="margin:0">Ao tocar em Começar, o tempo de ' + p.duracao + ' minutos começa a contar. Você precisa responder todas as questões para entregar.</p>' +
+    (A.erro ? '<div class="erro">' + esc(A.erro) + '</div>' : '') +
+    '<button class="btn primary" type="submit">Começar a prova</button></section>' +
+    '<div><button class="btn ghost" type="button" id="naoSou">← Não sou eu</button></div></form>';
+  var c = $('#pin'); c.focus();
+  c.oninput = function () { c.value = c.value.replace(/\D/g, '').slice(0, 6); };
+  $('#naoSou').onclick = function () { A.est = null; A.erro = ''; A.tela = 'nome'; render(); };
+  $('#fPin').onsubmit = function (ev) {
+    ev.preventDefault();
+    if (c.value.length !== 6) { A.erro = 'O PIN tem 6 números.'; return telaPin(); }
+    iniciar(p.codigo, e.id, c.value);
+  };
+}
+function abrirProva(r, salvo) {
     var n = r.questoes.length, alts = r.alternativas;
     var ordem = r.questoes.map(function (q, i) { return i; }), r1 = rng(r.codigo + r.estudante.id);
     if (r.embaralhar) ordem = embaralhar(ordem, r1);
@@ -260,31 +301,34 @@ function iniciar(codigo, estId, salvo) {
       return { qi: qi, op: op };
     });
     var resp = salvo && salvo.resp && salvo.resp.length === n ? salvo.resp : Array(n).fill(null);
-    A.s = { codigo: r.codigo, nome: r.nome, est: r.estudante, q: r.questoes, itens: itens, resp: resp, atual: salvo ? salvo.atual || 0 : 0,
+    A.s = { codigo: r.codigo, nome: r.nome, est: r.estudante, chave: r.chave, q: r.questoes, itens: itens, resp: resp, atual: salvo ? salvo.atual || 0 : 0,
       fim: r.fim, offset: r.agora - Date.now(), saidas: salvo ? salvo.saidas || 0 : 0, mostrarFaltando: false, avisou: false };
     salvarLocal();
-    A.tela = 'prova'; A.erro = '';
+    A.tela = 'prova'; A.erro = ''; A.est = null;
     clearInterval(tick); tick = setInterval(relogio, 500);
     try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(function () {}); } catch (e) {}
     render();
-  }).catch(function (e) {
-    if (salvo && /internet|servidor/.test(e.message)) {
-      $('#app').innerHTML = '<div class="panel stack" style="max-width:480px;margin:0 auto"><h2>Sem conexão</h2><p style="margin:0">' + esc(e.message) + ' Suas respostas continuam guardadas neste tablet.</p><button class="btn primary" id="retomar">Tentar de novo</button></div>';
-      $('#retomar').onclick = function () { iniciar(codigo, estId, salvo); };
-      return;
-    }
-    if (salvo) { guardar('prova_atual', null); A.s = null; A.tela = 'codigo'; A.erro = e.message; render(); return; }
-    A.erro = e.message; telaNome();
-  });
+}
+function iniciar(codigo, estId, pin) {
+  chamar('Conferindo o PIN...', 'alunoIniciar', codigo, estId, pin, APARELHO).then(function (r) { abrirProva(r, null); })
+    .catch(function (e) { A.erro = e.message; telaPin(); });
 }
 function retomar(atual) {
   if (atual.enviando) { A.envio = atual; A.tela = 'fim'; A.s = { codigo: atual.codigo, est: atual.est, nome: atual.nome }; enviar(); return; }
   A.s = { carregando: true };
-  iniciar(atual.codigo, atual.estId, atual);
+  chamar('Voltando para a prova...', 'alunoRetomar', atual.codigo, atual.estId, atual.chave).then(function (r) { abrirProva(r, atual); })
+    .catch(function (e) {
+      if (/internet|servidor/.test(e.message)) {
+        $('#app').innerHTML = '<div class="panel stack" style="max-width:480px;margin:0 auto"><h2>Sem conexão</h2><p style="margin:0">' + esc(e.message) + ' Suas respostas continuam guardadas neste tablet.</p><button class="btn primary" id="retomar">Tentar de novo</button></div>';
+        $('#retomar').onclick = function () { retomar(atual); };
+        return;
+      }
+      guardar('prova_atual', null); A.s = null; A.tela = 'codigo'; A.erro = e.message; render();
+    });
 }
 function salvarLocal() {
   var s = A.s; if (!s || !s.est) return;
-  guardar('prova_atual', { codigo: s.codigo, estId: s.est.id, est: s.est, nome: s.nome, resp: s.resp, atual: s.atual, saidas: s.saidas });
+  guardar('prova_atual', { codigo: s.codigo, estId: s.est.id, est: s.est, nome: s.nome, chave: s.chave, resp: s.resp, atual: s.atual, saidas: s.saidas });
 }
 function faltando() { return A.s.resp.map(function (r, i) { return r === null ? i : -1; }).filter(function (i) { return i >= 0; }); }
 // posição na tela (ordem embaralhada) -> questão original
@@ -335,22 +379,22 @@ function relogio() {
 }
 document.addEventListener('visibilitychange', function () {
   var s = A.s;
-  if (s && A.tela === 'prova' && document.hidden) { s.saidas++; salvarLocal(); api('alunoSaiu', s.codigo, s.est.id, s.saidas).catch(function () {}); }
+  if (s && A.tela === 'prova' && document.hidden) { s.saidas++; salvarLocal(); api('alunoSaiu', s.codigo, s.est.id, s.chave, s.saidas).catch(function () {}); }
 });
 function finalizar(motivo) {
   var s = A.s; clearInterval(tick); fecharModal();
-  A.envio = { codigo: s.codigo, estId: s.est.id, est: s.est, nome: s.nome, resp: s.resp.map(function (r) { return r || ''; }), saidas: s.saidas, motivo: motivo, enviando: true };
+  A.envio = { codigo: s.codigo, estId: s.est.id, est: s.est, nome: s.nome, chave: s.chave, resp: s.resp.map(function (r) { return r || ''; }), saidas: s.saidas, motivo: motivo, enviando: true };
   guardar('prova_atual', A.envio);
   A.tela = 'fim'; A.resultado = null; render(); enviar();
 }
 function enviar() {
   var e = A.envio; A.erroEnvio = '';
   telaFim();
-  api('alunoEntregar', e.codigo, e.estId, e.resp, e.saidas, e.motivo).then(function (r) {
+  api('alunoEntregar', e.codigo, e.estId, e.chave, e.resp, e.saidas, e.motivo).then(function (r) {
     A.resultado = r; guardar('prova_atual', null); telaFim();
   }).catch(function (err) {
-    A.erroEnvio = err.message; telaFim();
-    setTimeout(function () { if (A.tela === 'fim' && !A.resultado && pegar('prova_atual')) enviar(); }, 10000);
+    A.erroEnvio = err.message; A.semRede = /internet|servidor/.test(err.message); telaFim();
+    if (A.semRede) setTimeout(function () { if (A.tela === 'fim' && !A.resultado && pegar('prova_atual')) enviar(); }, 10000);
   });
 }
 function telaFim() {
@@ -358,7 +402,8 @@ function telaFim() {
   var h = '<div class="stack" style="max-width:520px;margin:0 auto"><section class="panel stack">';
   if (!r) {
     h += '<div class="eyebrow">' + (e.motivo === 'TEMPO' ? 'Tempo esgotado' : 'Entregando') + '</div><h1>Enviando suas respostas...</h1>' +
-      (A.erroEnvio ? '<div class="notice warn">' + esc(A.erroEnvio) + ' Suas respostas estão guardadas neste tablet. Vou tentar de novo sozinho a cada 10 segundos.</div><button class="btn primary" id="tentar">Tentar agora</button>' : '<div class="row"><div class="spin"></div><span class="hint">Não feche esta tela.</span></div>');
+      (A.erroEnvio ? (A.semRede ? '<div class="notice warn">' + esc(A.erroEnvio) + ' Suas respostas estão guardadas neste tablet. Vou tentar de novo sozinho a cada 10 segundos.</div><button class="btn primary" id="tentar">Tentar agora</button>'
+        : '<div class="notice bad">' + esc(A.erroEnvio) + '</div><button class="btn" id="descartar">Fechar</button>') : '<div class="row"><div class="spin"></div><span class="hint">Não feche esta tela.</span></div>');
   } else {
     h += '<div class="eyebrow">' + (e.motivo === 'TEMPO' ? 'Tempo esgotado' : 'Prova entregue') + '</div><h1>' + esc(e.est.nome) + ', sua prova foi registrada.</h1>' +
       (r.mostrarNota ? '<div><div class="big">' + num(r.nota) + ' <span class="hint" style="font-size:20px">de ' + num(r.valor) + ' pontos</span></div><div class="hint">' + r.acertos + ' de ' + r.questoes + ' questões certas</div></div>' : '<p class="hint" style="margin:0">O professor vai divulgar o resultado.</p>') +
@@ -367,6 +412,7 @@ function telaFim() {
   }
   $('#app').innerHTML = h + '</section></div>';
   var t = $('#tentar'); if (t) t.onclick = enviar;
+  var d = $('#descartar'); if (d) d.onclick = function () { guardar('prova_atual', null); A = { tela: 'codigo', erro: '', prova: null, turma: '', busca: '', s: null, envio: null }; render(); };
   var n = $('#novo'); if (n) n.onclick = function () { A = { tela: 'codigo', erro: '', prova: null, turma: '', busca: '', s: null, envio: null }; render(); };
 }
 
@@ -385,6 +431,7 @@ function renderProf() {
   }
   if (P.tela === 'editar') return telaEditor();
   if (P.tela === 'acomp') return telaAcomp();
+  if (P.tela === 'pins') return telaPins();
   telaLista();
 }
 function telaLogin() {
@@ -420,11 +467,12 @@ function telaLista() {
       ((p.minha || d.eu.perfil === 'coordenacao') ? '<button class="btn small" data-editar="' + p.id + '">Editar</button><button class="btn small danger" data-excluir="' + p.id + '">Excluir</button>' : '') + '</div></div>';
   }
   $('#app').innerHTML = '<div class="stack">' +
-    '<div class="row spread"><div><div class="eyebrow">Área do professor</div><h1>Provas online</h1></div><button class="btn primary" id="nova">+ Nova prova</button></div>' +
+    '<div class="row spread"><div><div class="eyebrow">Área do professor</div><h1>Provas online</h1></div><div class="row"><button class="btn" id="verPins">PINs dos estudantes</button><button class="btn primary" id="nova">+ Nova prova</button></div></div>' +
     '<section class="panel stack">' + (minhas.length ? minhas.map(card).join('') : '<p class="hint" style="margin:0">Você ainda não criou nenhuma prova online. Toque em Nova prova para começar.</p>') + '</section>' +
     (outras.length ? '<h2>Provas de outros professores</h2><section class="panel stack">' + outras.map(card).join('') + '</section>' : '') +
     '<div class="notice ok">Como aplicar: abra a prova, escreva o código no quadro e peça aos alunos para abrirem esta página no tablet. As notas vão direto para a planilha e aparecem também na aba Notas do Corretor EMFAL.</div></div>';
   $('#nova').onclick = function () { abrirEditor(null); };
+  $('#verPins').onclick = function () { P.tela = 'pins'; P.pins = null; render(); window.scrollTo(0, 0); };
   document.querySelectorAll('[data-editar]').forEach(function (b) { b.onclick = function () { abrirEditor(b.dataset.editar); }; });
   document.querySelectorAll('[data-abrir]').forEach(function (b) { b.onclick = function () { mudar(b.dataset.abrir, true); }; });
   document.querySelectorAll('[data-fechar]').forEach(function (b) { b.onclick = function () { mudar(b.dataset.fechar, false); }; });
@@ -504,6 +552,49 @@ function telaEditor() {
   };
 }
 
+// ----- PINs dos estudantes -----
+function carregarPins(turma) {
+  return chamar('Carregando PINs...', 'onlinePins', turma || '').then(function (r) { P.pins = r; telaPins(); })
+    .catch(function (e) { modal('Não deu certo', e.message, [['OK', fecharModal, 'primary']]); });
+}
+function telaPins() {
+  var d = P.pins;
+  if (!d) { $('#app').innerHTML = '<p class="hint">Carregando...</p>'; carregarPins(P.pinsTurma || ''); return; }
+  var lista = d.estudantes.filter(function (e) { return !P.pinsBusca || e.nome.toLowerCase().indexOf(P.pinsBusca.toLowerCase()) >= 0; });
+  $('#app').innerHTML = '<div class="stack">' +
+    '<div class="row spread noprint"><div><div class="eyebrow">Área do professor</div><h1>PINs dos estudantes</h1></div><button class="btn ghost" id="voltarP">← Provas</button></div>' +
+    '<section class="panel stack noprint">' +
+    '<p style="margin:0">Cada estudante tem um PIN de 6 números que vale para todas as provas online. Imprima os cartões da turma, recorte e entregue a cada um. Se alguém esquecer, o PIN está aqui. Se alguém descobrir o PIN de um colega, gere um novo.</p>' +
+    '<div class="chips"><button class="chip" data-pt="" aria-pressed="' + (!d.turma) + '">Todas</button>' + d.turmas.map(function (t) { return '<button class="chip" data-pt="' + esc(t.turma) + '" aria-pressed="' + (d.turma === t.turma) + '">' + esc(t.turma) + '</button>'; }).join('') + '</div>' +
+    '<div class="row spread"><input type="text" id="pBusca" placeholder="Procurar nome" value="' + esc(P.pinsBusca || '') + '" style="max-width:320px" autocomplete="off">' +
+    '<button class="btn primary" id="imprimir">Imprimir cartões (' + lista.length + ')</button></div>' +
+    '<p class="hint" style="margin:0">Na janela de impressão, escolha a impressora ou "Salvar como PDF". Cabem 18 cartões por folha A4.</p>' +
+    '<div class="table-wrap"><table><thead><tr><th>Estudante</th><th>Turma</th><th>PIN</th><th></th></tr></thead><tbody>' +
+    lista.map(function (e) {
+      return '<tr><td>' + esc(e.nome) + '</td><td>' + esc(e.turma) + '</td><td><span class="code" style="font-size:18px">' + esc(e.pin) + '</span></td>' +
+        '<td><button class="btn small" data-np="' + esc(e.id) + '">Gerar novo PIN</button></td></tr>';
+    }).join('') + '</tbody></table></div></section>' +
+    '<div class="cartoes">' + lista.map(function (e) {
+      return '<div class="cartao"><div class="ct-top">EMFAL · Prova Online</div><div class="ct-nome">' + esc(e.nome) + '</div><div class="ct-turma">Turma ' + esc(e.turma) + '</div>' +
+        '<div class="ct-pin">' + esc(e.pin) + '</div><div class="ct-obs">Este é o seu PIN. Guarde o cartão e não mostre a ninguém.</div></div>';
+    }).join('') + '</div></div>';
+  $('#voltarP').onclick = function () { P.tela = 'lista'; render(); };
+  document.querySelectorAll('[data-pt]').forEach(function (b) { b.onclick = function () { P.pinsTurma = b.dataset.pt; P.pinsBusca = ''; carregarPins(b.dataset.pt); }; });
+  var bu = $('#pBusca'); bu.oninput = function () { P.pinsBusca = bu.value; var pos = bu.selectionStart; telaPins(); var n = $('#pBusca'); n.focus(); n.setSelectionRange(pos, pos); };
+  $('#imprimir').onclick = function () { window.print(); };
+  document.querySelectorAll('[data-np]').forEach(function (b) {
+    b.onclick = function () {
+      var e = d.estudantes.filter(function (x) { return x.id === b.dataset.np; })[0];
+      modal('Gerar novo PIN para ' + e.nome + '?', 'O PIN atual (' + e.pin + ') deixa de funcionar. Entregue um cartão novo ao estudante.', [['Cancelar', fecharModal, 'ghost'], ['Gerar novo PIN', function () {
+        fecharModal();
+        chamar('Gerando PIN...', 'onlineNovoPin', e.id).then(function () { return carregarPins(P.pinsTurma || ''); }).then(function () { aviso('Novo PIN de ' + e.nome + ' criado.'); })
+          .catch(function (err) { modal('Não deu certo', err.message, [['OK', fecharModal, 'primary']]); });
+      }, 'primary']]);
+    };
+  });
+}
+function aviso(msg) { var a = document.createElement('div'); a.className = 'toast'; a.setAttribute('role', 'status'); a.textContent = msg; document.body.appendChild(a); setTimeout(function () { a.remove(); }, 3500); }
+
 // ----- acompanhamento -----
 var SIT = { NAO_INICIOU: ['Não começou', 'mute'], FAZENDO: ['Fazendo', 'pen'], ENTREGUE: ['Entregou', 'ok'], ABANDONOU: ['Não entregou', 'bad'] };
 function abrirAcomp(id) {
@@ -514,6 +605,11 @@ function atualizarAcomp(silencioso) {
   var pr = silencioso ? api('onlineAcompanhar', P.acompId) : chamar('Atualizando...', 'onlineAcompanhar', P.acompId);
   return pr.then(function (r) { P.acomp = r; if (P.tela === 'acomp') telaAcomp(); }).catch(function (e) { if (!silencioso) modal('Não deu certo', e.message, [['OK', fecharModal, 'primary']]); });
 }
+function agruparOcs(lista) {
+  var out = [], idx = {};
+  lista.forEach(function (o) { var k = o.estudante + '|' + o.tipo; if (idx[k] === undefined) { idx[k] = out.length; out.push(Object.assign({ n: 1 }, o)); } else out[idx[k]].n++; });
+  return out;
+}
 function telaAcomp() {
   var a = P.acomp;
   if (!a) { $('#app').innerHTML = '<p class="hint">Carregando...</p>'; atualizarAcomp(false); return; }
@@ -521,21 +617,23 @@ function telaAcomp() {
   a.estudantes.forEach(function (e) { c[e.situacao]++; });
   var ent = a.estudantes.filter(function (e) { return e.nota !== null; }), media = ent.length ? ent.reduce(function (s, e) { return s + Number(e.nota); }, 0) / ent.length : null;
   var ordem = { FAZENDO: 0, ABANDONOU: 1, ENTREGUE: 2, NAO_INICIOU: 3 };
-  var lista = a.estudantes.slice().sort(function (x, y) { return (ordem[x.situacao] - ordem[y.situacao]) || x.turma.localeCompare(y.turma) || x.nome.localeCompare(y.nome, 'pt-BR'); });
+  var lista = a.estudantes.slice().sort(function (x, y) { return ((y.alertas || []).length ? 1 : 0) - ((x.alertas || []).length ? 1 : 0) || (ordem[x.situacao] - ordem[y.situacao]) || x.turma.localeCompare(y.turma) || x.nome.localeCompare(y.nome, 'pt-BR'); });
   $('#app').innerHTML = '<div class="stack">' +
     '<div class="row spread"><div><div class="eyebrow">Acompanhar · código <span class="code">' + esc(a.prova.codigo) + '</span></div><h1>' + esc(a.prova.nome) + '</h1></div><button class="btn ghost" id="voltarL">← Provas</button></div>' +
     '<section class="panel stack"><div class="tot">' +
     '<span class="pill pen">' + c.FAZENDO + ' fazendo</span><span class="pill ok">' + c.ENTREGUE + ' entregaram</span>' +
     (c.ABANDONOU ? '<span class="pill bad">' + c.ABANDONOU + ' não entregaram</span>' : '') + '<span class="pill mute">' + c.NAO_INICIOU + ' não começaram</span>' +
     (media !== null ? '<span class="pill ok">Média ' + num(media) + ' de ' + num(a.prova.valor) + '</span>' : '') + '</div>' +
+    ((a.ocorrencias || []).length ? '<div class="notice bad stack" style="gap:6px"><strong>Alertas desta prova (' + a.ocorrencias.length + ')</strong><div class="ocs">' + agruparOcs(a.ocorrencias).slice(0, 8).map(function (o) { return '<div><span>' + esc(o.quando.slice(-5)) + '</span><strong>' + esc(o.estudante) + '</strong><span>' + esc(o.tipo) + (o.n > 1 ? ' (' + o.n + 'x)' : '') + '</span>' + (o.aparelho ? '<span class="hint">' + esc(o.aparelho) + '</span>' : '') + '</div>'; }).join('') + '</div></div>' : '') +
     '<div class="row spread"><span class="hint">Atualiza sozinho a cada 20 segundos. ' + (a.prova.ativa ? 'A prova está aberta.' : 'A prova está fechada: os alunos não conseguem começar.') + '</span><button class="btn small" id="atual">Atualizar agora</button></div>' +
-    '<div class="table-wrap"><table><thead><tr><th>Estudante</th><th>Turma</th><th>Situação</th><th>Nota</th><th>Acertos</th><th>Saiu da tela</th><th></th></tr></thead><tbody>' +
+    '<div class="table-wrap"><table><thead><tr><th>Estudante</th><th>Turma</th><th>Situação</th><th>Nota</th><th>Acertos</th><th>Saiu da tela</th><th>Alertas</th><th></th></tr></thead><tbody>' +
     lista.map(function (e) {
       var s = SIT[e.situacao] || ['?', 'mute'];
       var extra = e.situacao === 'FAZENDO' && e.resta !== null ? ' · ' + fmt(e.resta) : '';
       return '<tr><td>' + esc(e.nome) + '</td><td>' + esc(e.turma) + '</td><td><span class="pill ' + s[1] + '">' + s[0] + extra + '</span>' + (e.obs ? '<div class="hint">' + esc(e.obs) + '</div>' : '') + '</td>' +
         '<td>' + (e.nota !== null ? num(e.nota) : '—') + '</td><td>' + (e.acertos !== null ? e.acertos + '/' + a.prova.questoes : '—') + '</td>' +
         '<td>' + (e.saidas ? '<span class="pill bad">' + e.saidas + '×</span>' : (e.situacao === 'NAO_INICIOU' ? '—' : '<span class="pill ok">0</span>')) + '</td>' +
+        '<td style="white-space:normal;min-width:180px">' + (e.alertas || []).map(function (x) { return '<span class="pill bad" style="margin:0 4px 4px 0;white-space:normal">' + esc(x) + '</span>'; }).join('') + (e.aparelho ? '<div class="hint">' + esc(e.aparelho) + '</div>' : '') + '</td>' +
         '<td>' + (e.situacao !== 'NAO_INICIOU' ? '<button class="btn small" data-lib="' + esc(e.id) + '">Liberar</button>' : '') + '</td></tr>';
     }).join('') + '</tbody></table></div></section>' +
     '<p class="hint">"Liberar" apaga o início da prova desse estudante para ele poder começar outra vez (por exemplo, se o tablet descarregou). A nota anterior é substituída quando ele entregar de novo.</p></div>';
