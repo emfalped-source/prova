@@ -180,7 +180,8 @@ function api(fn) {
   if (SEM_TOKEN.indexOf(fn) < 0) args.unshift(SESS ? SESS.token : '');
   return fetch(API_URL, { method: 'POST', body: JSON.stringify({ fn: fn, args: args }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, credentials: 'omit', redirect: 'follow' })
     .catch(function () { throw new Error('Sem conexão com a internet. Confira o Wi-Fi e tente de novo.'); })
-    .then(function (r) { if (!r.ok) throw new Error('O servidor não respondeu (erro ' + r.status + '). Tente de novo.'); return r.json(); })
+    .then(function (r) { if (!r.ok) throw new Error('O servidor não respondeu (erro ' + r.status + '). Tente de novo.'); return r.text(); })
+    .then(function (t) { try { return JSON.parse(t); } catch (e) { throw new Error('O servidor está ocupado e não respondeu direito. Tente de novo.'); } })
     .then(function (j) {
       if (j && j.ok) return j.res;
       var m = String((j && j.erro) || 'Erro desconhecido.').replace(/^Error: /, '');
@@ -387,14 +388,25 @@ function finalizar(motivo) {
   guardar('prova_atual', A.envio);
   A.tela = 'fim'; A.resultado = null; render(); enviar();
 }
+// Erros passageiros (sem internet, servidor ocupado com a turma toda entregando junto): tenta de novo sozinho.
+var ERRO_PASSAGEIRO = /internet|servidor|ocupad|simult|too many|invoked|tempo limite|timed? ?out|lock|temporari|servi[çc]o|service|quota|cota|tente de novo/i;
+var tentativasEnvio = 0, timerEnvio = null;
 function enviar() {
   var e = A.envio; A.erroEnvio = '';
+  clearTimeout(timerEnvio);
   telaFim();
   api('alunoEntregar', e.codigo, e.estId, e.chave, e.resp, e.saidas, e.motivo).then(function (r) {
-    A.resultado = r; guardar('prova_atual', null); telaFim();
+    tentativasEnvio = 0; A.resultado = r; guardar('prova_atual', null); telaFim();
   }).catch(function (err) {
-    A.erroEnvio = err.message; A.semRede = /internet|servidor/.test(err.message); telaFim();
-    if (A.semRede) setTimeout(function () { if (A.tela === 'fim' && !A.resultado && pegar('prova_atual')) enviar(); }, 10000);
+    A.semRede = ERRO_PASSAGEIRO.test(err.message);
+    A.erroEnvio = A.semRede && !/internet/i.test(err.message) ? 'O servidor está ocupado com muitas entregas ao mesmo tempo.' : err.message;
+    telaFim();
+    if (A.semRede) {
+      // espera um pouco mais a cada tentativa e sorteia o momento, para os tablets não enviarem todos ao mesmo tempo
+      tentativasEnvio++;
+      var espera = Math.min(30000, 4000 + tentativasEnvio * 3000) + Math.floor(Math.random() * 6000);
+      timerEnvio = setTimeout(function () { if (A.tela === 'fim' && !A.resultado && pegar('prova_atual')) enviar(); }, espera);
+    }
   });
 }
 function telaFim() {
@@ -402,8 +414,8 @@ function telaFim() {
   var h = '<div class="stack" style="max-width:520px;margin:0 auto"><section class="panel stack">';
   if (!r) {
     h += '<div class="eyebrow">' + (e.motivo === 'TEMPO' ? 'Tempo esgotado' : 'Entregando') + '</div><h1>Enviando suas respostas...</h1>' +
-      (A.erroEnvio ? (A.semRede ? '<div class="notice warn">' + esc(A.erroEnvio) + ' Suas respostas estão guardadas neste tablet. Vou tentar de novo sozinho a cada 10 segundos.</div><button class="btn primary" id="tentar">Tentar agora</button>'
-        : '<div class="notice bad">' + esc(A.erroEnvio) + '</div><button class="btn" id="descartar">Fechar</button>') : '<div class="row"><div class="spin"></div><span class="hint">Não feche esta tela.</span></div>');
+      (A.erroEnvio ? (A.semRede ? '<div class="notice warn">' + esc(A.erroEnvio) + ' Suas respostas estão guardadas neste tablet. Vou tentar de novo sozinho em alguns segundos. Não feche esta tela.</div><button class="btn primary" id="tentar">Tentar agora</button>'
+        : '<div class="notice bad">' + esc(A.erroEnvio) + '</div><p class="hint" style="margin:0">Chame o professor antes de fechar. As respostas continuam guardadas neste tablet.</p><div class="row"><button class="btn primary" id="tentar">Tentar de novo</button><button class="btn ghost" id="descartar">Descartar (professor)</button></div>') : '<div class="row"><div class="spin"></div><span class="hint">Não feche esta tela.</span></div>');
   } else {
     h += '<div class="eyebrow">' + (e.motivo === 'TEMPO' ? 'Tempo esgotado' : 'Prova entregue') + '</div><h1>' + esc(e.est.nome) + ', sua prova foi registrada.</h1>' +
       (r.mostrarNota ? '<div><div class="big">' + num(r.nota) + ' <span class="hint" style="font-size:20px">de ' + num(r.valor) + ' pontos</span></div><div class="hint">' + r.acertos + ' de ' + r.questoes + ' questões certas</div></div>' : '<p class="hint" style="margin:0">O professor vai divulgar o resultado.</p>') +
@@ -412,7 +424,11 @@ function telaFim() {
   }
   $('#app').innerHTML = h + '</section></div>';
   var t = $('#tentar'); if (t) t.onclick = enviar;
-  var d = $('#descartar'); if (d) d.onclick = function () { guardar('prova_atual', null); A = { tela: 'codigo', erro: '', prova: null, turma: '', busca: '', s: null, envio: null }; render(); };
+  var d = $('#descartar'); if (d) d.onclick = function () {
+    modal('Descartar as respostas?', 'As respostas de ' + ((e.est && e.est.nome) || 'este estudante') + ' serão apagadas deste tablet e a prova NÃO será registrada. Use só se o professor já resolveu de outro jeito.', [
+      ['Cancelar', fecharModal, 'ghost'],
+      ['Descartar', function () { fecharModal(); clearTimeout(timerEnvio); guardar('prova_atual', null); A = { tela: 'codigo', erro: '', prova: null, turma: '', busca: '', s: null, envio: null }; render(); }, 'primary']]);
+  };
   var n = $('#novo'); if (n) n.onclick = function () { A = { tela: 'codigo', erro: '', prova: null, turma: '', busca: '', s: null, envio: null }; render(); };
 }
 
